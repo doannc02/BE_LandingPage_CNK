@@ -41,3 +41,33 @@ public class PostImageDto
     public string? AltText { get; set; }
     public int DisplayOrder { get; set; }
 }
+
+public class RelatedPostDto
+{
+    public Guid Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public string? FeaturedImageUrl { get; set; }
+    public string? ThumbnailUrl { get; set; }
+    public DateTime? PublishedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string? CategoryName { get; set; }
+}
+
+public class CommentDto
+{
+    public Guid Id { get; set; }
+    public string Content { get; set; } = string.Empty;
+    public string AuthorName { get; set; } = string.Empty;
+    public string? AuthorAvatar { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public bool IsApproved { get; set; }
+    public Guid? ParentId { get; set; }
+    public List<CommentDto> Replies { get; set; } = new();
+}
+
+public class NewsletterSubscriptionDto
+{
+    public string Email { get; set; } = string.Empty;
+    public string? Name { get; set; }
+}

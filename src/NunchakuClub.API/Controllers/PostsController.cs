@@ -72,6 +72,78 @@ public class PostsController : ControllerBase
     }
 
     /// <summary>
+    /// Get related posts
+    /// </summary>
+    [HttpGet("{slug}/related")]
+    public async Task<IActionResult> GetRelatedPosts(
+        string slug,
+        [FromQuery] int limit = 5)
+    {
+        var query = new GetRelatedPostsQuery(slug, limit);
+        var result = await _mediator.Send(query);
+
+        return result.IsSuccess
+            ? Ok(new { success = true, data = result.Data })
+            : BadRequest(new { success = false, error = result.Error });
+    }
+
+    /// <summary>
+    /// Like a post
+    /// </summary>
+    [HttpPost("{id:guid}/like")]
+    public async Task<IActionResult> LikePost(Guid id)
+    {
+        var command = new LikePostCommand(id);
+        var result = await _mediator.Send(command);
+
+        return result.IsSuccess
+            ? Ok(new { success = true, data = result.Data })
+            : BadRequest(new { success = false, error = result.Error });
+    }
+
+    /// <summary>
+    /// Get comments for a post
+    /// </summary>
+    [HttpGet("{id:guid}/comments")]
+    public async Task<IActionResult> GetComments(Guid id)
+    {
+        var query = new GetCommentsQuery(id);
+        var result = await _mediator.Send(query);
+
+        return result.IsSuccess
+            ? Ok(new { success = true, data = result.Data })
+            : BadRequest(new { success = false, error = result.Error });
+    }
+
+    /// <summary>
+    /// Add a comment to a post
+    /// </summary>
+    [HttpPost("{id:guid}/comments")]
+    public async Task<IActionResult> AddComment(Guid id, [FromBody] AddCommentRequest request)
+    {
+        var command = new AddCommentCommand(
+            id,
+            request.Content,
+            request.AuthorName,
+            request.AuthorEmail,
+            request.ParentId);
+
+        var result = await _mediator.Send(command);
+
+        return result.IsSuccess
+            ? Ok(new { success = true, data = new { commentId = result.Data } })
+            : BadRequest(new { success = false, error = result.Error });
+    }
+
+    public class AddCommentRequest
+    {
+        public string Content { get; set; } = string.Empty;
+        public string AuthorName { get; set; } = string.Empty;
+        public string AuthorEmail { get; set; } = string.Empty;
+        public Guid? ParentId { get; set; }
+    }
+
+    /// <summary>
     /// Create new post (Admin/Editor only)
     /// </summary>
     [HttpPost]
