@@ -10,12 +10,10 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Check if .env file exists
-if [ ! -f .env ]; then
-    echo -e "${RED}Error: .env file not found!${NC}"
-    echo -e "${YELLOW}Please create a .env file from .env.example:${NC}"
-    echo "cp .env.example .env"
-    echo "Then edit .env with your configuration."
+# Check if appsettings.json exists
+if [ ! -f src/NunchakuClub.API/appsettings.json ]; then
+    echo -e "${RED}Error: appsettings.json not found!${NC}"
+    echo -e "${YELLOW}Please make sure appsettings.json is configured properly.${NC}"
     exit 1
 fi
 
@@ -47,12 +45,12 @@ echo -e "${YELLOW}Stopping existing containers...${NC}"
 $DOCKER_COMPOSE down
 
 # Build and start containers
-echo -e "${YELLOW}Building and starting containers...${NC}"
+echo -e "${YELLOW}Building and starting API container...${NC}"
 $DOCKER_COMPOSE up -d --build
 
-# Wait for services to be healthy
+# Wait for service to start
 echo ""
-echo -e "${YELLOW}Waiting for services to be ready...${NC}"
+echo -e "${YELLOW}Waiting for API to be ready...${NC}"
 sleep 10
 
 # Check container status
@@ -68,9 +66,11 @@ echo ""
 echo "API is running on: http://localhost:8080"
 echo "Swagger UI: http://localhost:8080/swagger"
 echo ""
+echo "⚠️  Lưu ý: API đang kết nối tới PostgreSQL và Redis trên localhost của VPS"
+echo ""
 echo "Useful commands:"
 echo "  View logs:          $DOCKER_COMPOSE logs -f api"
-echo "  Stop services:      $DOCKER_COMPOSE down"
-echo "  Restart services:   $DOCKER_COMPOSE restart"
-echo "  View all logs:      $DOCKER_COMPOSE logs -f"
+echo "  Stop API:           $DOCKER_COMPOSE down"
+echo "  Restart API:        $DOCKER_COMPOSE restart api"
+echo "  Rebuild:            $DOCKER_COMPOSE up -d --build"
 echo ""

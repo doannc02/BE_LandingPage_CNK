@@ -5,8 +5,20 @@
 - VPS với Ubuntu 20.04+ hoặc Debian 11+
 - Docker 20.10+
 - Docker Compose 2.0+
+- **PostgreSQL 14+** đã cài đặt và chạy trên VPS
+- **Redis** đã cài đặt và chạy trên VPS (optional)
 - Ít nhất 2GB RAM
 - Ít nhất 20GB dung lượng đĩa
+
+## ⚠️ Quan Trọng
+
+Setup này giả định bạn đã có:
+- ✅ PostgreSQL đang chạy trên VPS (localhost:5432)
+- ✅ Redis đang chạy trên VPS (localhost:6379) - nếu cần
+- ✅ Database `cnk_hadong` đã được tạo
+- ✅ File `appsettings.json` đã cấu hình đúng connection string
+
+**Docker chỉ chạy Backend API**, kết nối tới PostgreSQL/Redis có sẵn trên VPS.
 
 ## Bước 1: Cài Đặt Docker trên VPS
 
@@ -35,35 +47,41 @@ sudo usermod -aG docker $USER
 # Logout and login again to apply group changes
 ```
 
-## Bước 2: Cấu Hình Environment Variables
+## Bước 2: Cấu Hình appsettings.json
 
-1. Copy file .env.example thành .env:
-```bash
-cp .env.example .env
-```
-
-2. Chỉnh sửa file .env với thông tin thực của bạn:
-```bash
-nano .env
-```
-
-**Quan trọng:** Thay đổi các giá trị sau:
-
-- `DB_PASSWORD`: Mật khẩu PostgreSQL (sử dụng mật khẩu mạnh)
-- `REDIS_PASSWORD`: Mật khẩu Redis (sử dụng mật khẩu mạnh)
-- `JWT_SECRET_KEY`: Secret key cho JWT (ít nhất 32 ký tự, ngẫu nhiên)
-- `AWS_ACCESS_KEY`: AWS Access Key của bạn
-- `AWS_SECRET_KEY`: AWS Secret Key của bạn
-- `AWS_S3_BUCKET_NAME`: Tên S3 bucket của bạn
-- `CORS_ORIGINS`: Domain frontend của bạn (ví dụ: https://connhikhuchadong.vn)
-- `API_PORT`: Port cho API (mặc định: 8080)
-
-### Tạo JWT Secret Key Ngẫu Nhiên
+Đảm bảo file `src/NunchakuClub.API/appsettings.json` đã được cấu hình đúng:
 
 ```bash
-# Tạo JWT secret key 64 ký tự ngẫu nhiên
-openssl rand -base64 64 | tr -d '\n'
+nano src/NunchakuClub.API/appsettings.json
 ```
+
+**Kiểm tra các cấu hình sau:**
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=cnk_hadong;Username=postgres;Password=your_password"
+  },
+  "JwtSettings": {
+    "SecretKey": "YourSuperSecretKeyThatIsAtLeast32CharactersLong!",
+    "Issuer": "NunchakuClubAPI",
+    "Audience": "NunchakuClubClient",
+    "AccessTokenExpirationMinutes": 60
+  },
+  "AwsS3": {
+    "BucketName": "your-bucket-name",
+    "Region": "ap-southeast-1",
+    "AccessKey": "YOUR_AWS_ACCESS_KEY",
+    "SecretKey": "YOUR_AWS_SECRET_KEY"
+  },
+  "CorsOrigins": "https://yourdomain.com",
+  "Redis": {
+    "ConnectionString": "localhost:6379"
+  }
+}
+```
+
+**⚠️ Lưu ý:** Vì Docker container sử dụng `network_mode: "host"`, nên `localhost` trong connection string sẽ trỏ đúng tới PostgreSQL/Redis trên VPS.
 
 ## Bước 3: Deploy Application
 
@@ -94,18 +112,15 @@ docker compose logs -f api
 docker compose ps
 ```
 
-Tất cả containers phải có status là `Up` hoặc `Up (healthy)`.
+Container API phải có status là `Up`.
 
 2. **Kiểm tra logs:**
 ```bash
 # Xem logs của API
 docker compose logs -f api
 
-# Xem logs của PostgreSQL
-docker compose logs -f postgres
-
-# Xem logs của Redis
-docker compose logs -f redis
+# Xem logs realtime
+docker compose logs -f --tail=100 api
 ```
 
 3. **Test API:**

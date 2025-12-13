@@ -1,95 +1,19 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:14-alpine
-    container_name: cnk_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-cnk_hadong}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-your_secure_password}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - cnk_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: cnk_redis
-    restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-your_redis_password}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - cnk_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Backend API
+  # Backend API - Kết nối với PostgreSQL/Redis đã có sẵn trên VPS
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: cnk_api
     restart: unless-stopped
+    # Sử dụng host network để truy cập localhost của VPS
+    network_mode: "host"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:80
-      # Database
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${DB_NAME:-cnk_hadong};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-your_secure_password}
-      # JWT
-      - JwtSettings__SecretKey=${JWT_SECRET_KEY}
-      - JwtSettings__Issuer=${JWT_ISSUER:-NunchakuClubAPI}
-      - JwtSettings__Audience=${JWT_AUDIENCE:-NunchakuClubClient}
-      - JwtSettings__AccessTokenExpirationMinutes=${JWT_EXPIRATION:-60}
-      # AWS S3
-      - AwsS3__BucketName=${AWS_S3_BUCKET_NAME}
-      - AwsS3__Region=${AWS_S3_REGION:-ap-southeast-1}
-      - AwsS3__AccessKey=${AWS_ACCESS_KEY}
-      - AwsS3__SecretKey=${AWS_SECRET_KEY}
-      # Redis
-      - Redis__ConnectionString=redis:6379,password=${REDIS_PASSWORD:-your_redis_password}
-      # CORS
-      - CorsOrigins=${CORS_ORIGINS:-http://localhost:3000}
-    ports:
-      - "${API_PORT:-8080}:80"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - cnk_network
+      - ASPNETCORE_URLS=http://+:8080
     volumes:
       - ./Logs:/app/Logs
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-networks:
-  cnk_network:
-    driver: bridge
-
-volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
+      - ./src/NunchakuClub.API/appsettings.json:/app/appsettings.json:ro
+    working_dir: /app
