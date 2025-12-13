@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  # Backend API - Kết nối với PostgreSQL/Redis đã có sẵn trên VPS
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cnk_api
+    restart: unless-stopped
+    # Sử dụng host network để truy cập localhost của VPS
+    network_mode: "host"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+    volumes:
+      - ./Logs:/app/Logs
+      - ./src/NunchakuClub.API/appsettings.json:/app/appsettings.json:ro
+    working_dir: /app
