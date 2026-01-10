@@ -19,6 +19,27 @@ public class Page : AuditableEntity
     public bool IsPublished { get; set; } = true;
     public bool ShowInMenu { get; set; } = true;
     public string? Template { get; set; }
-    
+
+    // === Custom Layout System ===
+
+    /// <summary>
+    /// Layout template được sử dụng cho page này
+    /// Nếu null, page sẽ dùng LayoutConfig riêng
+    /// </summary>
+    public Guid? LayoutTemplateId { get; set; }
+    public LayoutTemplate? LayoutTemplate { get; set; }
+
+    /// <summary>
+    /// Custom layout config cho page này (JSON)
+    /// Override hoặc customize từ template
+    /// Format: { "sections": [...], "theme": {...} }
+    /// </summary>
+    public string? LayoutConfig { get; set; }
+
+    /// <summary>
+    /// Version của layout (để rollback)
+    /// </summary>
+    public int LayoutVersion { get; set; } = 1;
+
     public ICollection<Page> Children { get; set; } = new List<Page>();
 }

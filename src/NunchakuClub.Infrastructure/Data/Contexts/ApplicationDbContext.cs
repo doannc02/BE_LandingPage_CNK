@@ -28,7 +28,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Media> MediaFiles => Set<Media>();
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
-    
+
+    // Custom Layout System
+    public DbSet<LayoutTemplate> LayoutTemplates => Set<LayoutTemplate>();
+    public DbSet<SectionType> SectionTypes => Set<SectionType>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

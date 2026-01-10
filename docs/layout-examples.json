@@ -1,0 +1,313 @@
+{
+  "examples": {
+    "homepage_layout": {
+      "description": "Example homepage layout with hero, features, and blog sections",
+      "layout": {
+        "layoutTemplateId": null,
+        "sections": [
+          {
+            "id": "hero-1",
+            "type": "hero",
+            "name": "Main Hero Banner",
+            "order": 1,
+            "isVisible": true,
+            "config": {
+              "title": "Câu Lạc Bộ Côn Nhị Khúc Hà Đông",
+              "subtitle": "Học Võ Thuật - Rèn Luyện Thân Thể - Phát Triển Tinh Thần",
+              "backgroundImage": "/media/hero-bg.jpg",
+              "backgroundOverlay": "rgba(0, 0, 0, 0.4)",
+              "height": "600px",
+              "ctaButtons": [
+                {
+                  "text": "Đăng Ký Ngay",
+                  "link": "/register",
+                  "style": "primary"
+                },
+                {
+                  "text": "Tìm Hiểu Thêm",
+                  "link": "/about",
+                  "style": "secondary"
+                }
+              ],
+              "animation": "fade-in"
+            }
+          },
+          {
+            "id": "features-1",
+            "type": "features-grid",
+            "name": "Key Features",
+            "order": 2,
+            "isVisible": true,
+            "config": {
+              "title": "Tại Sao Chọn Chúng Tôi",
+              "subtitle": "Những giá trị cốt lõi của câu lạc bộ",
+              "layout": "grid-3",
+              "features": [
+                {
+                  "icon": "trophy",
+                  "title": "Huấn Luyện Chuyên Nghiệp",
+                  "description": "Đội ngũ HLV giàu kinh nghiệm, tận tâm"
+                },
+                {
+                  "icon": "users",
+                  "title": "Cộng Đồng Thân Thiện",
+                  "description": "Môi trường luyện tập tích cực, hỗ trợ lẫn nhau"
+                },
+                {
+                  "icon": "medal",
+                  "title": "Thành Tích Cao",
+                  "description": "Nhiều học viên đạt huy chương quốc gia"
+                }
+              ]
+            }
+          },
+          {
+            "id": "courses-1",
+            "type": "course-list",
+            "name": "Courses Section",
+            "order": 3,
+            "isVisible": true,
+            "config": {
+              "title": "Các Khóa Học",
+              "displayMode": "carousel",
+              "itemsPerView": 3,
+              "showPrice": true,
+              "showDuration": true,
+              "filterByLevel": true
+            }
+          },
+          {
+            "id": "blog-1",
+            "type": "blog-grid",
+            "name": "Latest Blog Posts",
+            "order": 4,
+            "isVisible": true,
+            "config": {
+              "title": "Tin Tức & Bài Viết",
+              "subtitle": "Cập nhật tin tức mới nhất từ câu lạc bộ",
+              "layout": "grid-3",
+              "limit": 6,
+              "showExcerpt": true,
+              "showAuthor": true,
+              "showDate": true,
+              "showReadMore": true,
+              "categoryFilter": null
+            }
+          },
+          {
+            "id": "cta-1",
+            "type": "call-to-action",
+            "name": "CTA Banner",
+            "order": 5,
+            "isVisible": true,
+            "config": {
+              "title": "Sẵn Sàng Bắt Đầu?",
+              "description": "Tham gia cùng chúng tôi hôm nay và khám phá tiềm năng của bạn",
+              "buttonText": "Đăng Ký Học Thử",
+              "buttonLink": "/trial-class",
+              "backgroundColor": "#3B82F6",
+              "textColor": "#FFFFFF"
+            }
+          },
+          {
+            "id": "contact-1",
+            "type": "contact-form",
+            "name": "Contact Form",
+            "order": 6,
+            "isVisible": true,
+            "config": {
+              "title": "Liên Hệ Với Chúng Tôi",
+              "showMap": true,
+              "mapAddress": "Hà Đông, Hà Nội",
+              "showContactInfo": true,
+              "fields": ["name", "email", "phone", "message"]
+            }
+          }
+        ],
+        "theme": {
+          "colors": {
+            "primary": "#3B82F6",
+            "secondary": "#10B981",
+            "accent": "#F59E0B",
+            "background": "#FFFFFF",
+            "text": "#1F2937",
+            "textSecondary": "#6B7280",
+            "border": "#E5E7EB"
+          },
+          "typography": {
+            "fontFamily": "Inter, sans-serif",
+            "headingFont": "Poppins, sans-serif",
+            "baseFontSize": "16px",
+            "fontSizes": {
+              "h1": "3rem",
+              "h2": "2.25rem",
+              "h3": "1.875rem",
+              "body": "1rem",
+              "small": "0.875rem"
+            }
+          },
+          "logoUrl": "/media/logo.png",
+          "faviconUrl": "/media/favicon.ico"
+        },
+        "customCss": null,
+        "customJs": null,
+        "version": 1
+      }
+    },
+    "landing_page_layout": {
+      "description": "Simple landing page with hero and contact form",
+      "layout": {
+        "sections": [
+          {
+            "id": "hero-2",
+            "type": "hero",
+            "order": 1,
+            "config": {
+              "title": "Transform Your Life with Martial Arts",
+              "subtitle": "Join our community today",
+              "backgroundImage": "/media/landing-hero.jpg",
+              "height": "100vh",
+              "alignment": "center"
+            }
+          },
+          {
+            "id": "contact-2",
+            "type": "contact-form",
+            "order": 2,
+            "config": {
+              "title": "Get Started",
+              "layout": "inline",
+              "fields": ["name", "email", "phone"]
+            }
+          }
+        ]
+      }
+    },
+    "section_type_examples": [
+      {
+        "name": "Hero Banner",
+        "typeKey": "hero",
+        "description": "Large hero section with background image and CTA",
+        "category": "Header",
+        "configSchema": {
+          "fields": [
+            {
+              "name": "title",
+              "label": "Title",
+              "type": "text",
+              "required": true,
+              "placeholder": "Enter hero title"
+            },
+            {
+              "name": "subtitle",
+              "label": "Subtitle",
+              "type": "textarea",
+              "required": false
+            },
+            {
+              "name": "backgroundImage",
+              "label": "Background Image",
+              "type": "image",
+              "required": true
+            },
+            {
+              "name": "height",
+              "label": "Height",
+              "type": "select",
+              "options": [
+                { "label": "Small (400px)", "value": "400px" },
+                { "label": "Medium (600px)", "value": "600px" },
+                { "label": "Large (800px)", "value": "800px" },
+                { "label": "Full Screen", "value": "100vh" }
+              ]
+            },
+            {
+              "name": "ctaButtons",
+              "label": "CTA Buttons",
+              "type": "repeater",
+              "fields": [
+                { "name": "text", "type": "text" },
+                { "name": "link", "type": "text" },
+                { "name": "style", "type": "select", "options": ["primary", "secondary"] }
+              ]
+            }
+          ]
+        },
+        "defaultConfig": {
+          "title": "Welcome",
+          "height": "600px",
+          "alignment": "center"
+        }
+      },
+      {
+        "name": "Blog Grid",
+        "typeKey": "blog-grid",
+        "description": "Display blog posts in grid layout",
+        "category": "Content",
+        "configSchema": {
+          "fields": [
+            {
+              "name": "title",
+              "label": "Section Title",
+              "type": "text"
+            },
+            {
+              "name": "layout",
+              "label": "Grid Layout",
+              "type": "select",
+              "options": [
+                { "label": "2 Columns", "value": "grid-2" },
+                { "label": "3 Columns", "value": "grid-3" },
+                { "label": "4 Columns", "value": "grid-4" }
+              ]
+            },
+            {
+              "name": "limit",
+              "label": "Number of Posts",
+              "type": "number",
+              "defaultValue": 6
+            },
+            {
+              "name": "categoryFilter",
+              "label": "Filter by Category",
+              "type": "select",
+              "helpText": "Leave empty to show all categories"
+            }
+          ]
+        }
+      },
+      {
+        "name": "Contact Form",
+        "typeKey": "contact-form",
+        "description": "Contact form with customizable fields",
+        "category": "Forms",
+        "configSchema": {
+          "fields": [
+            {
+              "name": "title",
+              "label": "Form Title",
+              "type": "text"
+            },
+            {
+              "name": "fields",
+              "label": "Form Fields",
+              "type": "multi-select",
+              "options": [
+                { "label": "Name", "value": "name" },
+                { "label": "Email", "value": "email" },
+                { "label": "Phone", "value": "phone" },
+                { "label": "Subject", "value": "subject" },
+                { "label": "Message", "value": "message" }
+              ]
+            },
+            {
+              "name": "showMap",
+              "label": "Show Map",
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
