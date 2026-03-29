@@ -33,3 +33,19 @@ public class CreateCourseDto
     public string? ThumbnailUrl { get; set; }
     public bool IsFeatured { get; set; }
 }
+
+public class UpdateCourseDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Level { get; set; } = "Beginner";
+    public int DurationMonths { get; set; }
+    public int SessionsPerWeek { get; set; }
+    public decimal Price { get; set; }
+    public bool IsFree { get; set; }
+    public List<string>? Features { get; set; }
+    public string? ThumbnailUrl { get; set; }
+    public bool IsFeatured { get; set; }
+    public bool IsActive { get; set; } = true;
+    public int DisplayOrder { get; set; }
+}

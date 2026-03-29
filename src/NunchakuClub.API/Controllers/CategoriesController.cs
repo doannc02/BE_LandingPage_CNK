@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NunchakuClub.Application.Features.Categories.Commands;
 using NunchakuClub.Application.Features.Categories.DTOs;
 using NunchakuClub.Application.Features.Categories.Queries;
+using System;
 using System.Threading.Tasks;
 
 namespace NunchakuClub.API.Controllers;
@@ -34,5 +35,14 @@ public class CategoriesController : ControllerBase
         var command = new CreateCategoryCommand(dto);
         var result = await _mediator.Send(command);
         return result.IsSuccess ? Created("", result.Data) : BadRequest(result.Error);
+    }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryDto dto)
+    {
+        var command = new UpdateCategoryCommand(id, dto);
+        var result = await _mediator.Send(command);
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 }

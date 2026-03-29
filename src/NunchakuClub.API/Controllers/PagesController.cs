@@ -1,9 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NunchakuClub.Application.Features.Courses.Commands;
-using NunchakuClub.Application.Features.Courses.DTOs;
-using NunchakuClub.Application.Features.Courses.Queries;
+using NunchakuClub.Application.Features.Pages.Commands;
+using NunchakuClub.Application.Features.Pages.DTOs;
+using NunchakuClub.Application.Features.Pages.Queries;
 using System;
 using System.Threading.Tasks;
 
@@ -11,45 +11,45 @@ namespace NunchakuClub.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CoursesController : ControllerBase
+public class PagesController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    public CoursesController(IMediator mediator)
+    public PagesController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCourses()
+    public async Task<IActionResult> GetPages([FromQuery] bool? isPublished = null)
     {
-        var query = new GetCoursesQuery();
+        var query = new GetPagesQuery(isPublished);
         var result = await _mediator.Send(query);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetCourseById(Guid id)
+    [HttpGet("slug/{slug}")]
+    public async Task<IActionResult> GetPageBySlug(string slug)
     {
-        var query = new GetCourseByIdQuery(id);
+        var query = new GetPageBySlugQuery(slug);
         var result = await _mediator.Send(query);
         return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto dto)
+    public async Task<IActionResult> CreatePage([FromBody] CreatePageDto dto)
     {
-        var command = new CreateCourseCommand(dto);
+        var command = new CreatePageCommand(dto);
         var result = await _mediator.Send(command);
         return result.IsSuccess ? Created("", result.Data) : BadRequest(result.Error);
     }
 
     [HttpPut("{id:guid}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateCourse(Guid id, [FromBody] UpdateCourseDto dto)
+    public async Task<IActionResult> UpdatePage(Guid id, [FromBody] UpdatePageDto dto)
     {
-        var command = new UpdateCourseCommand(id, dto);
+        var command = new UpdatePageCommand(id, dto);
         var result = await _mediator.Send(command);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }

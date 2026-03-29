@@ -5,6 +5,15 @@ using Microsoft.OpenApi.Models;
 using NunchakuClub.Infrastructure.Data.Contexts;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Infrastructure.Services.Authentication;
+using NunchakuClub.Infrastructure.Services.AI;
+using NunchakuClub.Infrastructure.Services.CloudStorage;
+using System.Linq;
+using NunchakuClub.Infrastructure.Services.Caching;
+using Amazon.S3;
+using Amazon;
+using Npgsql;
+using Pgvector;
+using Pgvector.EntityFrameworkCore;
 using Serilog;
 using System.Text;
 using System.Reflection;
@@ -62,10 +71,16 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database
+// Database — use NpgsqlDataSource so pgvector type mapper is registered globally
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+dataSourceBuilder.UseVector();
+var dataSource = dataSourceBuilder.Build();
+
+builder.Services.AddSingleton(dataSource);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(dataSource, o => o.UseVector())
+           .UseSnakeCaseNamingConvention());
 
 builder.Services.AddScoped<IApplicationDbContext>(provider => 
     provider.GetRequiredService<ApplicationDbContext>());
@@ -100,6 +115,32 @@ builder.Services.AddAuthorization();
 // Application Services
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+// Cloud Storage
+builder.Services.Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3"));
+var awsSection = builder.Configuration.GetSection("AwsS3");
+builder.Services.AddSingleton<IAmazonS3>(_ =>
+{
+    var accessKey = awsSection["AccessKey"] ?? string.Empty;
+    var secretKey = awsSection["SecretKey"] ?? string.Empty;
+    var region = awsSection["Region"] ?? "ap-southeast-1";
+    return new AmazonS3Client(accessKey, secretKey, RegionEndpoint.GetBySystemName(region));
+});
+builder.Services.AddScoped<ICloudStorageService, AwsS3StorageService>();
+
+// Cache
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICacheService, MemoryCacheService>();
+
+// AI / RAG Services
+builder.Services.Configure<GeminiSettings>(builder.Configuration.GetSection("GeminiSettings"));
+builder.Services.AddHttpClient("embedding", c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<IEmbeddingService, GoogleEmbeddingService>();
+builder.Services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
+builder.Services.AddScoped<IAiChatService, GeminiChatService>();
 
 // MediatR - Register from Application assembly
 var applicationAssembly = Assembly.Load("NunchakuClub.Application");
@@ -148,12 +189,50 @@ if (app.Environment.IsDevelopment())
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        await context.Database.MigrateAsync();
-        Log.Information("Database migration completed successfully");
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+        {
+            await context.Database.MigrateAsync();
+            Log.Information("Database migration completed successfully");
+        }
+        else
+        {
+            Log.Information("Database is up to date, no migrations needed");
+        }
+    }
+    catch (Npgsql.PostgresException pgEx) when (pgEx.SqlState == "42P07")
+    {
+        Log.Warning("Tables already exist — marking migrations as applied");
+        var conn = context.Database.GetDbConnection();
+        await conn.OpenAsync();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO "__EFMigrationsHistory" (migration_id, product_version)
+            VALUES ('20251208091005_InitialCreate', '8.0.0')
+            ON CONFLICT DO NOTHING;
+            """;
+        await cmd.ExecuteNonQueryAsync();
+        await conn.CloseAsync();
     }
     catch (Exception ex)
     {
         Log.Error(ex, "An error occurred while migrating the database");
+    }
+}
+
+// Seed knowledge base (embed CLB documents into pgvector)
+// Chỉ chạy khi table rỗng — idempotent, an toàn để chạy mỗi startup
+using (var seedScope = app.Services.CreateScope())
+{
+    var kb = seedScope.ServiceProvider.GetRequiredService<IKnowledgeBaseService>();
+    try
+    {
+        await kb.SeedDefaultAsync();
+        Log.Information("Knowledge base seed check completed");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Knowledge base seed failed — chat will fall back to keyword search");
     }
 }
 
