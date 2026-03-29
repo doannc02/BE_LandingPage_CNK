@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Domain.Entities;
+using Pgvector.EntityFrameworkCore;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,9 +29,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Media> MediaFiles => Set<Media>();
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
-    
+    public DbSet<KnowledgeDocument> KnowledgeDocuments => Set<KnowledgeDocument>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresExtension("vector");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }

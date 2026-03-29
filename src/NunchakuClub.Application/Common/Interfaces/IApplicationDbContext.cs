@@ -24,6 +24,7 @@ public interface IApplicationDbContext
     DbSet<Media> MediaFiles { get; }
     DbSet<Setting> Settings { get; }
     DbSet<ActivityLog> ActivityLogs { get; }
-    
+    DbSet<KnowledgeDocument> KnowledgeDocuments { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

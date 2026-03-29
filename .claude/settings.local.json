@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.md$\")",
+      "Bash(find /d/WORKS/LandingPage/BE_LandingPage_CNK -type d -not -path */bin/* -not -path */obj/* -not -path */.git/*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet add:*)",
+      "Bash(find D:WORKSLandingPageBE_LandingPage_CNKsrc -name *.cs -newer D:WORKSLandingPageBE_LandingPage_CNKsrcNunchakuClub.ApplicationFeaturesCoursesCommandsCreateCourseCommand.cs)",
+      "Bash(dotnet ef:*)",
+      "Bash(del \"D:\\\\WORKS\\\\LandingPage\\\\BE_LandingPage_CNK\\\\src\\\\NunchakuClub.Infrastructure\\\\Migrations\\\\20260329044235_AddPgvectorKnowledgeDocuments.cs\")",
+      "Bash(del \"D:\\\\WORKS\\\\LandingPage\\\\BE_LandingPage_CNK\\\\src\\\\NunchakuClub.Infrastructure\\\\Migrations\\\\20260329044235_AddPgvectorKnowledgeDocuments.Designer.cs\")"
+    ]
+  }
+}

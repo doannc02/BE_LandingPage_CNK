@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NunchakuClub.Infrastructure.Data.Contexts;
+using Pgvector;
 
 #nullable disable
 
@@ -20,707 +21,966 @@ namespace NunchakuClub.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Achievement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("AchievementDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("achievement_date");
 
                     b.Property<Guid?>("CoachId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("coach_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsFeatured")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_featured");
 
                     b.Property<string>("ParticipantNames")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("participant_names");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("title");
 
                     b.Property<int>("Type")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("VideoUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("video_url");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_achievements");
 
-                    b.HasIndex("CoachId");
+                    b.HasIndex("CoachId")
+                        .HasDatabaseName("ix_achievements_coach_id");
 
-                    b.ToTable("Achievements");
+                    b.ToTable("achievements", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.ActivityLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("Action")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("action");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Details")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("details");
 
                     b.Property<Guid?>("EntityId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("entity_id");
 
                     b.Property<string>("EntityType")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("entity_type");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("ip_address");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("UserAgent")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("user_agent");
 
                     b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_activity_logs");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_activity_logs_user_id");
 
-                    b.ToTable("ActivityLogs");
+                    b.ToTable("activity_logs", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Category", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_categories");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_categories_parent_id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("categories", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Coach", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string[]>("Achievements")
-                        .HasColumnType("text[]");
+                        .HasColumnType("text[]")
+                        .HasColumnName("achievements");
 
                     b.Property<string>("AvatarUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("avatar_url");
 
                     b.Property<string>("Bio")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("bio");
 
                     b.Property<string[]>("Certifications")
-                        .HasColumnType("text[]");
+                        .HasColumnType("text[]")
+                        .HasColumnName("certifications");
 
                     b.Property<string>("CoverImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("cover_image_url");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
 
                     b.Property<string>("Email")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("full_name");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<string>("Phone")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
 
                     b.Property<string>("Specialization")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("specialization");
 
                     b.Property<string>("Title")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
                     b.Property<int>("YearsOfExperience")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("years_of_experience");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_coaches");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_coaches_user_id");
 
-                    b.ToTable("Coaches");
+                    b.ToTable("coaches", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Comment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AuthorEmail")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("author_email");
 
                     b.Property<string>("AuthorName")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("author_name");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("content");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
 
                     b.Property<Guid>("PostId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_id");
 
                     b.Property<int>("Status")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_comments");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_comments_parent_id");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("PostId")
+                        .HasDatabaseName("ix_comments_post_id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_comments_user_id");
 
-                    b.ToTable("Comments");
+                    b.ToTable("comments", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.ContactSubmission", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AdminNotes")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("admin_notes");
 
                     b.Property<Guid?>("CourseId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("course_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("full_name");
 
                     b.Property<DateTime?>("HandledAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("handled_at");
 
                     b.Property<Guid?>("HandledBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("handled_by");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("ip_address");
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("message");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
 
                     b.Property<int>("Status")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("UserAgent")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("user_agent");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_contact_submissions");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("CourseId")
+                        .HasDatabaseName("ix_contact_submissions_course_id");
 
-                    b.ToTable("ContactSubmissions");
+                    b.ToTable("contact_submissions", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Course", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("CoverImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("cover_image_url");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
 
                     b.Property<int>("DurationMonths")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_months");
 
                     b.Property<string[]>("Features")
-                        .HasColumnType("text[]");
+                        .HasColumnType("text[]")
+                        .HasColumnName("features");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<bool>("IsFeatured")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_featured");
 
                     b.Property<bool>("IsFree")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_free");
 
                     b.Property<int>("Level")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("level");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                        .HasColumnType("numeric")
+                        .HasColumnName("price");
 
                     b.Property<int>("SessionsPerWeek")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("sessions_per_week");
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
 
                     b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_url");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_courses");
 
-                    b.ToTable("Courses");
+                    b.ToTable("courses", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.CourseEnrollment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AdminNotes")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("admin_notes");
 
                     b.Property<Guid>("CourseId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("course_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("email");
 
                     b.Property<DateTime>("EnrolledAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enrolled_at");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("full_name");
 
                     b.Property<string>("Message")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("message");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
 
                     b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
 
                     b.Property<Guid?>("ProcessedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("processed_by");
 
                     b.Property<int>("Status")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_course_enrollments");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("CourseId")
+                        .HasDatabaseName("ix_course_enrollments_course_id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_course_enrollments_user_id");
 
-                    b.ToTable("CourseEnrollments");
+                    b.ToTable("course_enrollments", (string)null);
+                });
+
+            modelBuilder.Entity("NunchakuClub.Domain.Entities.KnowledgeDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Vector>("Embedding")
+                        .HasColumnType("vector(768)")
+                        .HasColumnName("embedding");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_knowledge_documents");
+
+                    b.HasIndex("Embedding")
+                        .HasDatabaseName("ix_knowledge_documents_embedding")
+                        .HasAnnotation("Npgsql:StorageParameter:ef_construction", 64)
+                        .HasAnnotation("Npgsql:StorageParameter:m", 16);
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Embedding"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Embedding"), new[] { "vector_cosine_ops" });
+
+                    b.ToTable("knowledge_documents", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Media", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AltText")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("alt_text");
 
                     b.Property<string>("Caption")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("caption");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<int?>("Duration")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("duration");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("file_path");
 
                     b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasColumnName("file_size");
 
                     b.Property<string>("FileType")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("file_type");
 
                     b.Property<string>("FileUrl")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("file_url");
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("filename");
 
                     b.Property<int?>("Height")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("height");
 
                     b.Property<string>("MimeType")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("mime_type");
 
                     b.Property<string>("OriginalFilename")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("original_filename");
 
                     b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_url");
 
                     b.Property<string>("Title")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid>("UploadedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("uploaded_by");
 
                     b.Property<Guid>("UploaderId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("uploader_id");
 
                     b.Property<int?>("Width")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("width");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_media_files");
 
-                    b.HasIndex("UploaderId");
+                    b.HasIndex("UploaderId")
+                        .HasDatabaseName("ix_media_files_uploader_id");
 
-                    b.ToTable("MediaFiles");
+                    b.ToTable("media_files", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.MenuItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
 
                     b.Property<string>("IconClass")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("icon_class");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<string>("Label")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("label");
 
                     b.Property<string>("MenuLocation")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("menu_location");
 
                     b.Property<Guid?>("PageId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("page_id");
 
                     b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
 
                     b.Property<string>("Target")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("target");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("Url")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("url");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_menu_items");
 
-                    b.HasIndex("PageId");
+                    b.HasIndex("PageId")
+                        .HasDatabaseName("ix_menu_items_page_id");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_menu_items_parent_id");
 
-                    b.ToTable("MenuItems");
+                    b.ToTable("menu_items", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Page", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("BannerImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("banner_image_url");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("content");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
 
                     b.Property<string>("Excerpt")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("excerpt");
 
                     b.Property<string>("FeaturedImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("featured_image_url");
 
                     b.Property<bool>("IsPublished")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_published");
 
                     b.Property<string>("MetaDescription")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("meta_description");
 
                     b.Property<string>("MetaTitle")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("meta_title");
 
                     b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
 
                     b.Property<bool>("ShowInMenu")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("show_in_menu");
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
 
                     b.Property<string>("Template")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("template");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_pages");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_pages_parent_id");
 
-                    b.ToTable("Pages");
+                    b.ToTable("pages", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Post", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AdminNotes")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("admin_notes");
 
                     b.Property<Guid>("AuthorId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
 
                     b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
 
                     b.Property<int>("CommentCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("comment_count");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("content");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
 
                     b.Property<string>("Excerpt")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("excerpt");
 
                     b.Property<string>("FeaturedImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("featured_image_url");
 
                     b.Property<bool>("IsFeatured")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_featured");
 
                     b.Property<int>("LikeCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("like_count");
 
                     b.Property<string>("MetaDescription")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("meta_description");
 
                     b.Property<string>("MetaKeywords")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("meta_keywords");
 
                     b.Property<string>("MetaTitle")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("meta_title");
 
                     b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("slug");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
 
                     b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_url");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
 
                     b.Property<int>("ViewCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("view_count");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_posts");
 
-                    b.HasIndex("AuthorId");
+                    b.HasIndex("AuthorId")
+                        .HasDatabaseName("ix_posts_author_id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_posts_category_id");
 
-                    b.HasIndex("IsFeatured");
+                    b.HasIndex("IsFeatured")
+                        .HasDatabaseName("ix_posts_is_featured");
 
-                    b.HasIndex("PublishedAt");
+                    b.HasIndex("PublishedAt")
+                        .HasDatabaseName("ix_posts_published_at");
 
                     b.HasIndex("Slug")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_posts_slug");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_posts_status");
 
                     b.ToTable("posts", (string)null);
                 });
@@ -729,51 +989,66 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AltText")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("alt_text");
 
                     b.Property<string>("Caption")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("caption");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("image_url");
 
                     b.Property<Guid>("PostId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_id");
 
                     b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_url");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_post_images");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("PostId")
+                        .HasDatabaseName("ix_post_images_post_id");
 
-                    b.ToTable("PostImages");
+                    b.ToTable("post_images", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.PostTag", b =>
                 {
                     b.Property<Guid>("PostId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_id");
 
                     b.Property<Guid>("TagId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
 
-                    b.HasKey("PostId", "TagId");
+                    b.HasKey("PostId", "TagId")
+                        .HasName("pk_post_tags");
 
-                    b.HasIndex("TagId");
+                    b.HasIndex("TagId")
+                        .HasDatabaseName("ix_post_tags_tag_id");
 
                     b.ToTable("post_tags", (string)null);
                 });
@@ -782,22 +1057,27 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.Property<string>("Key")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("key");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("type");
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("value");
 
-                    b.HasKey("Key");
+                    b.HasKey("Key")
+                        .HasName("pk_settings");
 
                     b.ToTable("settings", (string)null);
                 });
@@ -806,99 +1086,125 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("name");
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_tags");
 
-                    b.ToTable("Tags");
+                    b.ToTable("tags", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("AvatarUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("avatar_url");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("email");
 
                     b.Property<bool>("EmailVerified")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("email_verified");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("full_name");
 
                     b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_login_at");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
 
                     b.Property<string>("Phone")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("refresh_token");
 
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refresh_token_expiry_time");
 
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("role");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_users");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_email");
 
                     b.HasIndex("Username")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_username");
 
                     b.ToTable("users", (string)null);
                 });
@@ -907,7 +1213,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Coach", "Coach")
                         .WithMany("CoachAchievements")
-                        .HasForeignKey("CoachId");
+                        .HasForeignKey("CoachId")
+                        .HasConstraintName("fk_achievements_coaches_coach_id");
 
                     b.Navigation("Coach");
                 });
@@ -916,7 +1223,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany("ActivityLogs")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .HasConstraintName("fk_activity_logs_users_user_id");
 
                     b.Navigation("User");
                 });
@@ -925,7 +1233,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Category", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .HasConstraintName("fk_categories_categories_parent_id");
 
                     b.Navigation("Parent");
                 });
@@ -934,7 +1243,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .HasConstraintName("fk_coaches_users_user_id");
 
                     b.Navigation("User");
                 });
@@ -943,17 +1253,20 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Comment", "Parent")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .HasConstraintName("fk_comments_comments_parent_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_comments_posts_post_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany("Comments")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .HasConstraintName("fk_comments_users_user_id");
 
                     b.Navigation("Parent");
 
@@ -966,7 +1279,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Course", "Course")
                         .WithMany()
-                        .HasForeignKey("CourseId");
+                        .HasForeignKey("CourseId")
+                        .HasConstraintName("fk_contact_submissions_courses_course_id");
 
                     b.Navigation("Course");
                 });
@@ -977,11 +1291,13 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .WithMany("Enrollments")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_course_enrollments_courses_course_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .HasConstraintName("fk_course_enrollments_users_user_id");
 
                     b.Navigation("Course");
 
@@ -994,7 +1310,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("UploaderId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_media_files_users_uploader_id");
 
                     b.Navigation("Uploader");
                 });
@@ -1003,11 +1320,13 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Page", "Page")
                         .WithMany()
-                        .HasForeignKey("PageId");
+                        .HasForeignKey("PageId")
+                        .HasConstraintName("fk_menu_items_pages_page_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.MenuItem", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .HasConstraintName("fk_menu_items_menu_items_parent_id");
 
                     b.Navigation("Page");
 
@@ -1018,7 +1337,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Page", "Parent")
                         .WithMany("Children")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .HasConstraintName("fk_pages_pages_parent_id");
 
                     b.Navigation("Parent");
                 });
@@ -1029,12 +1349,14 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .WithMany("Posts")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_posts_users_author_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.Category", "Category")
                         .WithMany("Posts")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_posts_categories_category_id");
 
                     b.Navigation("Author");
 
@@ -1047,7 +1369,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .WithMany("Images")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_post_images_posts_post_id");
 
                     b.Navigation("Post");
                 });
@@ -1058,13 +1381,15 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .WithMany("PostTags")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_post_tags_posts_post_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.Tag", "Tag")
                         .WithMany("PostTags")
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_post_tags_tags_tag_id");
 
                     b.Navigation("Post");
 
