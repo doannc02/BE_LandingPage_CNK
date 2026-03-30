@@ -20,7 +20,7 @@ namespace NunchakuClub.API.Controllers;
 /// powered by Gemini 1.5 Flash via Semantic Kernel + RAG.
 /// </summary>
 [ApiController]
-[Route("v1/chat")]
+[Route("api/v1/chat")]
 public sealed class ChatController : ControllerBase
 {
     private readonly IAiChatService _aiService;
