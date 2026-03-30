@@ -22,4 +22,7 @@ public sealed class GeminiSettings
     /// If empty, the Authorization header is not validated.
     /// </summary>
     public string BackendApiKey { get; set; } = string.Empty;
+
+    public string EmbeddingModel { get; set; } 
+    public string ApiVersion { get; set; } 
 }
