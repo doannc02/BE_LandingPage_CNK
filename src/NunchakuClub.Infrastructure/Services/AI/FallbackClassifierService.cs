@@ -76,7 +76,7 @@ public sealed class FallbackClassifierService : IFallbackClassifierService
         IReadOnlyList<KnowledgeChunk> chunks;
         try
         {
-            chunks = await _kb.SearchAsync(userMessage, topK: 3, ct);
+            chunks = await _kb.SearchAsync(userMessage, topK: 5, ct);
         }
         catch (Exception ex)
         {
@@ -108,7 +108,7 @@ public sealed class FallbackClassifierService : IFallbackClassifierService
         // JSON mode không available trong SK 1.21.1 — dùng prompt engineering + robust parsing
         var executionSettings = new GeminiPromptExecutionSettings
         {
-            MaxTokens = 600,
+            MaxTokens = 1000,
             Temperature = 0.1f,
         };
 
