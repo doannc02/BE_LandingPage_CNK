@@ -124,6 +124,11 @@ public sealed class GeminiChatService : IAiChatService
         ChannelWriter<string> writer,
         CancellationToken ct)
     {
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            MaxTokens = 2048,
+            Temperature = 0.7f,
+        };
         const int maxRetries = 3;
         Exception? lastEx = null;
 
@@ -132,7 +137,7 @@ public sealed class GeminiChatService : IAiChatService
             try
             {
                 await foreach (var chunk in _chat
-                    .GetStreamingChatMessageContentsAsync(chatHistory, cancellationToken: ct))
+                    .GetStreamingChatMessageContentsAsync(chatHistory,executionSettings: executionSettings, cancellationToken: ct))
                 {
                     if (!string.IsNullOrEmpty(chunk.Content))
                         await writer.WriteAsync(chunk.Content, ct);
