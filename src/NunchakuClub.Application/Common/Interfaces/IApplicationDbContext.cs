@@ -25,6 +25,7 @@ public interface IApplicationDbContext
     DbSet<Setting> Settings { get; }
     DbSet<ActivityLog> ActivityLogs { get; }
     DbSet<KnowledgeDocument> KnowledgeDocuments { get; }
+    DbSet<PendingUserMessage> PendingUserMessages { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

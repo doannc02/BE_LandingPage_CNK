@@ -533,6 +533,100 @@ public sealed class KnowledgeBaseService : IKnowledgeBaseService
               "Xin lỗi, tôi chưa có thông tin về vấn đề này. Bạn vui lòng liên hệ hotline/Zalo 0868.699.860 hoặc nhắn tin Fanpage để được hỗ trợ nhanh nhất nhé!"
             - Không suy đoán thông tin địa chỉ, học phí, lịch tập nếu không có dữ liệu.
             """
+        ),
+        (
+            "dia-chi-tong-hop-full",
+            "Thông tin đầy đủ tất cả cơ sở CLB (tổng hợp tra cứu nhanh)",
+            """
+            Võ đường Côn Nhị Khúc Hà Đông hiện có 5 cơ sở tập luyện tại Hà Nội:
+
+            1. Cơ sở Hà Đông:
+               Địa điểm: Trường Tiểu học Văn Yên, Hà Đông, Hà Nội.
+               Lịch tập: Thứ 2, 4, 6 hàng tuần.
+               Giờ tập: 18:30 – 20:30.
+               Học phí: Miễn phí.
+
+            2. Cơ sở Kiến Hưng:
+               Địa điểm: Nhà văn hóa Tổ 19, phường Kiến Hưng, Hà Đông, Hà Nội.
+               Lịch tập: Thứ 3, 5, 7 hàng tuần.
+               Giờ tập: 18:00 – 19:45.
+               Học phí: 350.000đ/tháng.
+
+            3. Cơ sở Thống Nhất:
+               Địa điểm: Công viên Thống Nhất, Hai Bà Trưng, Hà Nội (khu vực sau tượng đài công an nhân dân).
+               Lịch tập: Thứ 3, 5, 7 hàng tuần.
+               Giờ tập: 19:00 – 21:00.
+               Học phí: 300.000đ/tháng.
+
+            4. Cơ sở Hòa Bình:
+               Địa điểm: Công viên Hòa Bình, quận Bắc Từ Liêm, Hà Nội.
+               Lịch tập: Thứ 3, 5, 7 hàng tuần.
+               Giờ tập: 19:00 – 21:00.
+               Học phí: 300.000đ/tháng.
+
+            5. Cơ sở Kim Giang:
+               Địa điểm: Công viên đối diện Cổng số 4 Trường Ngôi Sao Hoàng Mai, ngõ 350 Kim Giang, Hà Nội.
+               Lịch tập: Thứ 3, 5, 7 hàng tuần.
+               Giờ tập: 19:00 – 21:00.
+               Học phí: 300.000đ/tháng.
+
+            Khi người dùng hỏi về địa chỉ, địa điểm, cơ sở, lịch tập hoặc học phí, hãy cung cấp đầy đủ thông tin của tất cả các cơ sở.
+            Liên hệ đăng ký: Chủ nhiệm 0868.699.860 | Thư ký 0862.515.596.
+            """
+        ),
+        (
+            "faq-dia-chi-co-so",
+            "FAQ: CLB ở đâu? Địa chỉ các cơ sở tập luyện",
+            """
+            Câu hỏi: CLB Côn Nhị Khúc ở đâu? Địa chỉ tập luyện ở đâu? Có những cơ sở nào?
+            Trả lời: Võ đường Côn Nhị Khúc Hà Đông có 5 cơ sở tại Hà Nội:
+            1. Hà Đông – Trường TH Văn Yên – Thứ 2-4-6 – 18:30-20:30 – Miễn phí.
+            2. Kiến Hưng – Nhà văn hóa Tổ 19 phường Kiến Hưng – Thứ 3-5-7 – 18:00-19:45 – 350.000đ/tháng.
+            3. Thống Nhất – Công viên Thống Nhất, Hai Bà Trưng (sau tượng đài công an) – Thứ 3-5-7 – 19:00-21:00 – 300.000đ/tháng.
+            4. Hòa Bình – Công viên Hòa Bình, Bắc Từ Liêm – Thứ 3-5-7 – 19:00-21:00 – 300.000đ/tháng.
+            5. Kim Giang – Công viên đối diện Cổng số 4 Trường Ngôi Sao Hoàng Mai, ngõ 350 Kim Giang – Thứ 3-5-7 – 19:00-21:00 – 300.000đ/tháng.
+
+            Câu hỏi: Tập ở đâu gần nhất? Cơ sở nào gần quận X?
+            Trả lời: Võ đường có cơ sở tại Hà Đông, Hai Bà Trưng, Bắc Từ Liêm và Hoàng Mai. Bạn liên hệ hotline 0868.699.860 để được tư vấn cơ sở gần nhất.
+            """
+        ),
+        (
+            "faq-hoc-phi-lich-tap",
+            "FAQ: Học phí bao nhiêu? Lịch tập như thế nào?",
+            """
+            Câu hỏi: Học phí bao nhiêu? Tốn bao nhiêu tiền? Mất phí không?
+            Trả lời:
+            - Cơ sở Hà Đông (Trường TH Văn Yên): Hoàn toàn MIỄN PHÍ.
+            - Cơ sở Kiến Hưng: 350.000đ/tháng.
+            - Cơ sở Thống Nhất: 300.000đ/tháng.
+            - Cơ sở Hòa Bình: 300.000đ/tháng.
+            - Cơ sở Kim Giang: 300.000đ/tháng.
+
+            Câu hỏi: Lịch tập mấy ngày một tuần? Tập vào ngày nào? Buổi tối mấy giờ?
+            Trả lời:
+            - Hà Đông: Thứ 2 – 4 – 6, 18:30 đến 20:30.
+            - Kiến Hưng: Thứ 3 – 5 – 7, 18:00 đến 19:45.
+            - Thống Nhất, Hòa Bình, Kim Giang: Thứ 3 – 5 – 7, 19:00 đến 21:00.
+
+            Câu hỏi: Có tập cuối tuần không? Thứ 7 có lớp không?
+            Trả lời: Có. Các cơ sở Kiến Hưng, Thống Nhất, Hòa Bình và Kim Giang đều có lịch tập Thứ 7.
+            """
+        ),
+        (
+            "faq-dang-ky-lien-he",
+            "FAQ: Đăng ký như thế nào? Liên hệ ai?",
+            """
+            Câu hỏi: Đăng ký học ở đâu? Liên hệ ai? Nhắn tin số nào?
+            Trả lời: Để đăng ký tham gia Võ đường Côn Nhị Khúc Hà Đông, bạn có thể:
+            - Nhắn Zalo/gọi Chủ nhiệm Nguyễn Văn Chất: 0868.699.860.
+            - Nhắn Zalo/gọi Thư ký Ngọc Diệu: 0862.515.596.
+            - Nhắn tin Fanpage: Côn Nhị Khúc Hà Đông.
+            - Theo dõi TikTok: Côn Nhị Khúc Hà Đông.
+            Không yêu cầu kinh nghiệm võ thuật trước. Phù hợp mọi lứa tuổi.
+
+            Câu hỏi: Có lớp online không? Ở xa có học được không?
+            Trả lời: Có. Võ đường có khóa học Online theo giáo trình chính quy 12 cấp bậc. Học qua Zoom, được cấp thẻ học viên, thi nâng đai Online và cấp chứng chỉ. Liên hệ Ngọc Diệu: 0862.515.596 để đăng ký.
+            """
         )
     ];
 }

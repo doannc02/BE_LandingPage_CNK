@@ -30,6 +30,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<KnowledgeDocument> KnowledgeDocuments => Set<KnowledgeDocument>();
+    public DbSet<PendingUserMessage> PendingUserMessages => Set<PendingUserMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

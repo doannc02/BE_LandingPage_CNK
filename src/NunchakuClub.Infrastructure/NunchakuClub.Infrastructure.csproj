@@ -10,6 +10,8 @@
   <ItemGroup>
     <!-- Semantic Kernel + Google Gemini connector (experimental) -->
     <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
+    <PackageReference Include="FirebaseAdmin" Version="3.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.21.1" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.21.1-alpha" />

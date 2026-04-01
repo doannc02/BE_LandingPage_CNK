@@ -17,6 +17,13 @@ public class User : AuditableEntity
     public DateTime? LastLoginAt { get; set; }
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+
+    /// <summary>
+    /// FCM device token cho push notification (web/mobile).
+    /// Cập nhật qua POST /api/admin/fcm-token khi admin đăng nhập.
+    /// Dùng làm fallback khi token không có trong Firebase presence.
+    /// </summary>
+    public string? FcmToken { get; set; }
     
     public ICollection<Post> Posts { get; set; } = new List<Post>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
