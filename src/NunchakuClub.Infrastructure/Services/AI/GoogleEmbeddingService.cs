@@ -21,8 +21,10 @@ public sealed class GoogleEmbeddingService : NunchakuClub.Application.Common.Int
     private readonly ILogger<GoogleEmbeddingService> _logger;
 
     // Try v1 stable first, then v1beta if needed
-    private const string BaseUrlV1 = "https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent";
-    private const string BaseUrlFallback = "https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent";
+    // Đổi 2 constant này:
+private const string BaseUrlV1 = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent";
+private const string BaseUrlFallback = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2-preview:embedContent";
+
 
     public GoogleEmbeddingService(
         IOptions<GeminiSettings> opts,
@@ -42,10 +44,11 @@ public sealed class GoogleEmbeddingService : NunchakuClub.Application.Common.Int
     {
         // Try text-embedding-004 via v1 (stable), fall back to embedding-001 via v1beta
         var candidates = new[]
-        {
-            (Url: $"{BaseUrlV1}?key={_apiKey}",        Model: "models/text-embedding-004"),
-            (Url: $"{BaseUrlFallback}?key={_apiKey}",  Model: "models/embedding-001"),
-        };
+    {
+        (Url: $"{BaseUrlV1}?key={_apiKey}",       Model: "models/gemini-embedding-001"),
+        (Url: $"{BaseUrlFallback}?key={_apiKey}", Model: "models/gemini-embedding-2-preview"),
+    };
+
 
         foreach (var (url, model) in candidates)
         {
