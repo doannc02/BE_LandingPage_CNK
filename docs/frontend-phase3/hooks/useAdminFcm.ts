@@ -54,6 +54,19 @@ export function useAdminFcm(): UseAdminFcmReturn {
       });
 
       setFcmToken(token);
+
+      // Persist token to backend (PG fallback for offline notifications)
+      try {
+        await fetch('/api/admin/fcm-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+          credentials: 'include',
+        });
+      } catch (err) {
+        console.warn('[FCM] Failed to save token to backend:', err);
+      }
+
       return token;
     } catch (err) {
       console.error('[FCM] Failed to get token:', err);

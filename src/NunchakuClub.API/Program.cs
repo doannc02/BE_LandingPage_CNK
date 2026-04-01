@@ -182,6 +182,9 @@ builder.Services.AddSingleton<IFirebaseChatService, FirebaseChatService>();
 // Fallback Classifier — Scoped vì dùng IKnowledgeBaseService (Scoped)
 builder.Services.AddScoped<IFallbackClassifierService, FallbackClassifierService>();
 
+// Background Services
+builder.Services.AddHostedService<NotificationRetryService>();
+
 // MediatR - Register from Application assembly
 var applicationAssembly = Assembly.Load("NunchakuClub.Application");
 builder.Services.AddMediatR(cfg => 

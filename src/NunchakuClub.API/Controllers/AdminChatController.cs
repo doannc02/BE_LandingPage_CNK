@@ -54,26 +54,26 @@ public sealed class AdminChatController : ControllerBase
     ///   - Token refresh (FCM token thay đổi)
     /// </summary>
     [HttpPost("fcm-token")]
-    //public async Task<ActionResult<Result<bool>>> SaveFcmToken(
-    //    [FromBody] SaveFcmTokenDto dto,
-    //    CancellationToken ct)
-    //{
-    //    if (string.IsNullOrWhiteSpace(dto.Token))
-    //        return BadRequest(Result<bool>.Failure("FCM token không được rỗng."));
+    public async Task<ActionResult<Result<bool>>> SaveFcmToken(
+        [FromBody] SaveFcmTokenDto dto,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Token))
+            return BadRequest(Result<bool>.Failure("FCM token không được rỗng."));
 
-    //    var adminIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //    if (!Guid.TryParse(adminIdStr, out var adminId))
-    //        return Unauthorized(Result<bool>.Failure("Không xác định được admin ID."));
+        var adminIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(adminIdStr, out var adminId))
+            return Unauthorized(Result<bool>.Failure("Không xác định được admin ID."));
 
-    //    var user = await _db.Users.FindAsync([adminId], ct);
-    //    if (user is null)
-    //        return NotFound(Result<bool>.Failure("Không tìm thấy tài khoản."));
+        var user = await _db.Users.FindAsync([adminId], ct);
+        if (user is null)
+            return NotFound(Result<bool>.Failure("Không tìm thấy tài khoản."));
 
-    //    user.FcmToken = dto.Token.Trim();
-    //    await _db.SaveChangesAsync(ct);
+        user.FcmToken = dto.Token.Trim();
+        await _db.SaveChangesAsync(ct);
 
-    //    return Ok(Result<bool>.Success(true));
-    //}
+        return Ok(Result<bool>.Success(true));
+    }
 
     // ── Pending messages (admin offline) ─────────────────────────────────────
 
@@ -152,6 +152,46 @@ public sealed class AdminChatController : ControllerBase
         return Ok(Result<bool>.Success(true));
     }
 
+    // ── Notification badge ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// GET /api/admin/pending-count
+    /// Trả về số lượng pending messages chưa được xử lý.
+    /// Frontend dùng để hiển thị badge đỏ trên notification icon.
+    /// Poll mỗi 30–60 giây hoặc dùng SSE/WebSocket cho realtime.
+    /// </summary>
+    [HttpGet("pending-count")]
+    public async Task<ActionResult<Result<PendingCountDto>>> GetPendingCount(CancellationToken ct)
+    {
+        var count = await _db.PendingUserMessages
+            .CountAsync(m => m.Status == PendingMessageStatus.Pending
+                          || m.Status == PendingMessageStatus.Assigned, ct);
+
+        return Ok(Result<PendingCountDto>.Success(new PendingCountDto(count)));
+    }
+
+    // ── Mark read / close ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// POST /api/admin/pending-messages/{id}/close
+    /// Đóng một pending message (admin không reply, đánh dấu đã xem / bỏ qua).
+    /// Status → Closed. Không gửi notification cho user.
+    /// </summary>
+    [HttpPost("pending-messages/{id:guid}/close")]
+    public async Task<ActionResult<Result<bool>>> ClosePendingMessage(
+        Guid id,
+        CancellationToken ct)
+    {
+        var message = await _db.PendingUserMessages.FindAsync([id], ct);
+        if (message is null)
+            return NotFound(Result<bool>.Failure($"Không tìm thấy pending message {id}."));
+
+        message.Status = PendingMessageStatus.Closed;
+        await _db.SaveChangesAsync(ct);
+
+        return Ok(Result<bool>.Success(true));
+    }
+
     // ── Active Firebase chat rooms ────────────────────────────────────────────
 
     /// <summary>
@@ -211,3 +251,10 @@ public sealed class SendChatMessageDto
 {
     public string Text { get; init; } = string.Empty;
 }
+
+public sealed class SaveFcmTokenDto
+{
+    public string Token { get; init; } = string.Empty;
+}
+
+public sealed record PendingCountDto(int Count);
