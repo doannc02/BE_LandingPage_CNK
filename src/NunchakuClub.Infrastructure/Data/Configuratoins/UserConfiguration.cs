@@ -40,5 +40,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Status)
             .HasConversion<string>()
             .HasMaxLength(20);
+
+        builder.Property(u => u.FcmToken)
+            .HasMaxLength(512);   // FCM tokens are ~163 chars, 512 gives headroom
     }
 }

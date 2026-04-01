@@ -3,11 +3,14 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NunchakuClub.Application.Common.Interfaces;
+using NunchakuClub.Application.Common.Models;
+using NunchakuClub.Application.Features.Chat.Commands;
 using NunchakuClub.Application.Features.Chat.DTOs;
 using NunchakuClub.Infrastructure.Services.AI;
 
@@ -24,6 +27,7 @@ namespace NunchakuClub.API.Controllers;
 public sealed class ChatController : ControllerBase
 {
     private readonly IAiChatService _aiService;
+    private readonly IMediator _mediator;
     private readonly ILogger<ChatController> _logger;
     private readonly GeminiSettings _settings;
 
@@ -32,10 +36,12 @@ public sealed class ChatController : ControllerBase
 
     public ChatController(
         IAiChatService aiService,
+        IMediator mediator,
         IOptions<GeminiSettings> settings,
         ILogger<ChatController> logger)
     {
         _aiService = aiService;
+        _mediator = mediator;
         _logger = logger;
         _settings = settings.Value;
     }
@@ -144,6 +150,56 @@ public sealed class ChatController : ControllerBase
             {
                 // Swallow — connection may already be gone.
             }
+        }
+    }
+
+    /// <summary>
+    /// POST /api/v1/chat/message
+    ///
+    /// Non-streaming endpoint với RAG + fallback logic.
+    /// Trả về một trong 3 loại response:
+    ///   - type: "AI"          → AI đã trả lời, xem trường answer
+    ///   - type: "HumanOnline" → Admin online, xem chatRoomId để subscribe Firebase realtime
+    ///   - type: "LeftMessage" → Không có admin, message đã lưu, admin sẽ reply sau
+    /// </summary>
+    [HttpPost("message")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Result<ProcessChatResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Result<ProcessChatResponseDto>>> ProcessMessage(
+        [FromBody] ChatMessageRequestDto request,
+        CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(Result<ProcessChatResponseDto>.Failure("Dữ liệu đầu vào không hợp lệ."));
+
+        var trimmedMessage = request.Message.Trim();
+        if (string.IsNullOrEmpty(trimmedMessage))
+            return BadRequest(Result<ProcessChatResponseDto>.Failure("Trường 'message' không được rỗng."));
+
+        var invalidRole = request.History
+            .FirstOrDefault(h => h.Role is not ("user" or "assistant"));
+        if (invalidRole is not null)
+            return BadRequest(Result<ProcessChatResponseDto>.Failure(
+                $"history[].role chỉ nhận 'user' hoặc 'assistant', nhận được: '{invalidRole.Role}'."));
+
+        var command = new ProcessChatCommand(
+            SessionId: request.SessionId,
+            UserMessage: trimmedMessage,
+            History: request.History
+                .Select(h => new ChatHistoryItem(h.Role, h.Content))
+                .ToList()
+        );
+
+        try
+        {
+            var result = await _mediator.Send(command, ct);
+            return Ok(Result<ProcessChatResponseDto>.Success(ProcessChatResponseDto.From(result)));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "ProcessMessage failed for session {Session}", request.SessionId);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                Result<ProcessChatResponseDto>.Failure("Đã xảy ra lỗi xử lý. Vui lòng thử lại sau."));
         }
     }
 

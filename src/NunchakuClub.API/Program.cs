@@ -7,10 +7,14 @@ using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Infrastructure.Services.Authentication;
 using NunchakuClub.Infrastructure.Services.AI;
 using NunchakuClub.Infrastructure.Services.CloudStorage;
+using NunchakuClub.Infrastructure.Services.Firebase;
+using NunchakuClub.Infrastructure.Services.AI;
 using System.Linq;
 using NunchakuClub.Infrastructure.Services.Caching;
 using Amazon.S3;
 using Amazon;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Npgsql;
 using Pgvector;
 using Pgvector.EntityFrameworkCore;
@@ -20,6 +24,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -141,6 +146,41 @@ builder.Services.AddHttpClient("embedding", c =>
 builder.Services.AddScoped<IEmbeddingService, GoogleEmbeddingService>();
 builder.Services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
 builder.Services.AddScoped<IAiChatService, GeminiChatService>();
+
+// Firebase — khởi tạo FirebaseApp singleton (phải trước khi đăng ký services)
+// Skip nếu service account không tồn tại (EF design-time, CI không cần Firebase)
+var firebaseSection = builder.Configuration.GetSection("Firebase");
+builder.Services.Configure<FirebaseSettings>(firebaseSection);
+builder.Services.AddHttpClient("firebase-presence", c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(10);
+});
+
+var firebaseServiceAccountPath = firebaseSection["ServiceAccountPath"] ?? string.Empty;
+var firebaseEnabled = File.Exists(firebaseServiceAccountPath);
+
+if (firebaseEnabled && FirebaseApp.DefaultInstance is null)
+{
+#pragma warning disable CS0618 // GoogleCredential.FromFile vẫn hoạt động — deprecated chỉ advisory
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(firebaseServiceAccountPath),
+        ProjectId = firebaseSection["ProjectId"]
+    });
+#pragma warning restore CS0618
+    Log.Information("Firebase initialized from {Path}", firebaseServiceAccountPath);
+}
+else if (!firebaseEnabled)
+{
+    Log.Warning("Firebase service account not found at '{Path}' — Firebase features disabled", firebaseServiceAccountPath);
+}
+
+builder.Services.AddSingleton<IFirebasePresenceService, FirebasePresenceService>();
+builder.Services.AddSingleton<IFcmNotificationService, FcmNotificationService>();
+builder.Services.AddSingleton<IFirebaseChatService, FirebaseChatService>();
+
+// Fallback Classifier — Scoped vì dùng IKnowledgeBaseService (Scoped)
+builder.Services.AddScoped<IFallbackClassifierService, FallbackClassifierService>();
 
 // MediatR - Register from Application assembly
 var applicationAssembly = Assembly.Load("NunchakuClub.Application");

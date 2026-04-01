@@ -38,3 +38,6 @@ appsettings.Development.json
 appsettings.Production.json
 *.log
 *.tmp
+
+# Firebase service account (sensitive — never commit)
+**/secrets/firebase-service-account.json
