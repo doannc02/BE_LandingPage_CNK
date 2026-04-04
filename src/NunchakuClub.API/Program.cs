@@ -121,7 +121,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
-// Cloud Storage
+// Cloud Storage — AWS S3 (images)
 builder.Services.Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3"));
 var awsSection = builder.Configuration.GetSection("AwsS3");
 builder.Services.AddSingleton<IAmazonS3>(_ =>
@@ -132,6 +132,10 @@ builder.Services.AddSingleton<IAmazonS3>(_ =>
     return new AmazonS3Client(accessKey, secretKey, RegionEndpoint.GetBySystemName(region));
 });
 builder.Services.AddScoped<ICloudStorageService, AwsS3StorageService>();
+
+// Cloud Storage — Cloudinary (lesson videos)
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddScoped<IVideoStorageService, CloudinaryVideoService>();
 
 // Cache
 builder.Services.AddMemoryCache();
