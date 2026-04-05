@@ -115,7 +115,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+// Authorization Policies — RBAC 3 cấp
+builder.Services.AddAuthorization(options =>
+{
+    // Chỉ SuperAdmin (RoleID 1) được phép — dùng cho AssignRole
+    options.AddPolicy("RequireSuperAdmin", policy =>
+        policy.RequireRole(nameof(NunchakuClub.Domain.Entities.UserRole.SuperAdmin)));
+
+    // SuperAdmin + SubAdmin — quản lý Chat Rooms, học viên, RAG KB
+    options.AddPolicy("RequireAdminArea", policy =>
+        policy.RequireRole(
+            nameof(NunchakuClub.Domain.Entities.UserRole.SuperAdmin),
+            nameof(NunchakuClub.Domain.Entities.UserRole.SubAdmin)));
+
+    // Bất kỳ user đã xác thực — đọc/ghi thông tin cá nhân
+    options.AddPolicy("RequireStudent", policy =>
+        policy.RequireAuthenticatedUser());
+});
 
 // Application Services
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
@@ -182,6 +198,8 @@ else if (!firebaseEnabled)
 builder.Services.AddSingleton<IFirebasePresenceService, FirebasePresenceService>();
 builder.Services.AddSingleton<IFcmNotificationService, FcmNotificationService>();
 builder.Services.AddSingleton<IFirebaseChatService, FirebaseChatService>();
+builder.Services.AddScoped<NunchakuClub.Application.Common.Interfaces.IFirebaseAuthService,
+    NunchakuClub.Infrastructure.Services.Firebase.FirebaseAuthService>();
 
 // Fallback Classifier — Scoped vì dùng IKnowledgeBaseService (Scoped)
 builder.Services.AddScoped<IFallbackClassifierService, FallbackClassifierService>();

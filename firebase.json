@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "landing-page-cnk"
+  },
+  "database": {
+    "project": "landing-page-cnk",
+    "rules": "firebase.rules"
+  }
+}

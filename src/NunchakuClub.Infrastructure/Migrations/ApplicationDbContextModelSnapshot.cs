@@ -1222,6 +1222,11 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("fcm_token");
 
+                    b.Property<string>("FirebaseUid")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("firebase_uid");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1281,6 +1286,11 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasDatabaseName("ix_users_email");
+
+                    b.HasIndex("FirebaseUid")
+                        .IsUnique()
+                        .HasFilter("firebase_uid IS NOT NULL")
+                        .HasDatabaseName("ix_users_firebase_uid");
 
                     b.HasIndex("Username")
                         .IsUnique()

@@ -11,7 +11,7 @@ public class User : AuditableEntity
     public string FullName { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public string? AvatarUrl { get; set; }
-    public UserRole Role { get; set; } = UserRole.Member;
+    public UserRole Role { get; set; } = UserRole.Student;
     public UserStatus Status { get; set; } = UserStatus.Active;
     public bool EmailVerified { get; set; }
     public DateTime? LastLoginAt { get; set; }
@@ -24,6 +24,12 @@ public class User : AuditableEntity
     /// Dùng làm fallback khi token không có trong Firebase presence.
     /// </summary>
     public string? FcmToken { get; set; }
+
+    /// <summary>
+    /// Firebase UID — được set khi người dùng đăng nhập qua SSO (Google/Email Firebase).
+    /// Dùng để liên kết account nội bộ với Firebase Auth.
+    /// </summary>
+    public string? FirebaseUid { get; set; }
     
     public ICollection<Post> Posts { get; set; } = new List<Post>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();

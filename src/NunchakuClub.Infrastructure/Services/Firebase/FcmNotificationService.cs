@@ -132,7 +132,7 @@ public sealed class FcmNotificationService : IFcmNotificationService
 
             return await db.Users
                 .Where(u => u.FcmToken != null
-                         && (u.Role == UserRole.Admin || u.Role == UserRole.Editor))
+                         && (u.Role == UserRole.SuperAdmin || u.Role == UserRole.SubAdmin))
                 .Select(u => u.FcmToken!)
                 .Distinct()
                 .ToListAsync(ct);

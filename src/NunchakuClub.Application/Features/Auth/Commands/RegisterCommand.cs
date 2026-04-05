@@ -43,7 +43,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Gu
             Username = request.Username,
             PasswordHash = _passwordHasher.HashPassword(request.Password),
             FullName = request.FullName,
-            Role = UserRole.Member,
+            Role = UserRole.Student,
             Status = UserStatus.Active,
             EmailVerified = false
         };

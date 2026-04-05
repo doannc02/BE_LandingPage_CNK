@@ -43,5 +43,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.FcmToken)
             .HasMaxLength(512);   // FCM tokens are ~163 chars, 512 gives headroom
+
+        builder.Property(u => u.FirebaseUid)
+            .HasMaxLength(128);   // Firebase UID là 28 ký tự, 128 cho phép dự phòng
+
+        builder.HasIndex(u => u.FirebaseUid)
+            .IsUnique()
+            .HasFilter("firebase_uid IS NOT NULL");
     }
 }
