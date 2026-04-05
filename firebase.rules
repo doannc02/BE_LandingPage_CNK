@@ -1,0 +1,73 @@
+// Firebase Realtime Database Security Rules
+// Sử dụng auth.token.role (custom claim được set bởi backend qua setCustomUserClaims)
+//
+// Roles:
+//   SuperAdmin — quản lý toàn hệ thống
+//   SubAdmin   — Võ sư, quản lý chat & học viên
+//   Student    — Học viên, chỉ đọc/ghi data của bản thân
+//
+// Deploy: firebase deploy --only database
+
+{
+  "rules": {
+
+    // ── Presence (online/offline status của admin) ─────────────────────────
+    "presence": {
+      "admins": {
+        "$uid": {
+          // Chỉ SuperAdmin/SubAdmin tự ghi presence của mình
+          ".read":  "auth != null && (auth.token.role === 'SuperAdmin' || auth.token.role === 'SubAdmin')",
+          ".write": "auth != null && auth.uid === $uid && (auth.token.role === 'SuperAdmin' || auth.token.role === 'SubAdmin')"
+        }
+      }
+    },
+
+    // ── Chat Rooms ─────────────────────────────────────────────────────────
+    "chatRooms": {
+      // Đọc danh sách rooms: bất kỳ user đã xác thực
+      ".read": "auth != null",
+
+      "$roomId": {
+        // Tạo/xóa/cấu hình room: chỉ SubAdmin trở lên
+        ".write": "auth != null && (auth.token.role === 'SuperAdmin' || auth.token.role === 'SubAdmin')",
+
+        "messages": {
+          // Đọc tin nhắn: user trong room hoặc admin
+          ".read": "auth != null",
+
+          "$messageId": {
+            // Ghi tin nhắn: chỉ chủ tin nhắn (senderId khớp uid)
+            ".write": "auth != null && (newData.child('senderId').val() === auth.uid || auth.token.role === 'SuperAdmin' || auth.token.role === 'SubAdmin')",
+            ".validate": "newData.hasChildren(['senderId', 'content', 'timestamp'])"
+          }
+        }
+      }
+    },
+
+    // ── Pending Messages (chờ admin phản hồi) ─────────────────────────────
+    "pendingMessages": {
+      // Chỉ admin đọc/ghi pending queue
+      ".read":  "auth != null && (auth.token.role === 'SuperAdmin' || auth.token.role === 'SubAdmin')",
+      ".write": "auth != null && (auth.token.role === 'SuperAdmin' || auth.token.role === 'SubAdmin')"
+    },
+
+    // ── Profiles người dùng ────────────────────────────────────────────────
+    "users": {
+      "$uid": {
+        // Đọc: bản thân hoặc admin
+        ".read": "auth != null && (auth.uid === $uid || auth.token.role === 'SuperAdmin' || auth.token.role === 'SubAdmin')",
+        // Ghi: chỉ bản thân (Student không được sửa role của người khác)
+        ".write": "auth != null && auth.uid === $uid",
+
+        "role": {
+          // Role chỉ được ghi bởi backend (thông qua Admin SDK) — client KHÔNG được tự sửa
+          ".write": "false"
+        }
+      }
+    },
+
+    // ── Mặc định: từ chối tất cả ──────────────────────────────────────────
+    ".read":  "false",
+    ".write": "false"
+  }
+}

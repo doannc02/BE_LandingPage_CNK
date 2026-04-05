@@ -115,13 +115,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+// Authorization Policies — RBAC 3 cấp
+builder.Services.AddAuthorization(options =>
+{
+    // Chỉ SuperAdmin (RoleID 1) được phép — dùng cho AssignRole
+    options.AddPolicy("RequireSuperAdmin", policy =>
+        policy.RequireRole(nameof(NunchakuClub.Domain.Entities.UserRole.SuperAdmin)));
+
+    // SuperAdmin + SubAdmin — quản lý Chat Rooms, học viên, RAG KB
+    options.AddPolicy("RequireAdminArea", policy =>
+        policy.RequireRole(
+            nameof(NunchakuClub.Domain.Entities.UserRole.SuperAdmin),
+            nameof(NunchakuClub.Domain.Entities.UserRole.SubAdmin)));
+
+    // Bất kỳ user đã xác thực — đọc/ghi thông tin cá nhân
+    options.AddPolicy("RequireStudent", policy =>
+        policy.RequireAuthenticatedUser());
+});
 
 // Application Services
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
-// Cloud Storage
+// Cloud Storage — AWS S3 (images)
 builder.Services.Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3"));
 var awsSection = builder.Configuration.GetSection("AwsS3");
 builder.Services.AddSingleton<IAmazonS3>(_ =>
@@ -132,6 +148,10 @@ builder.Services.AddSingleton<IAmazonS3>(_ =>
     return new AmazonS3Client(accessKey, secretKey, RegionEndpoint.GetBySystemName(region));
 });
 builder.Services.AddScoped<ICloudStorageService, AwsS3StorageService>();
+
+// Cloud Storage — Cloudinary (lesson videos)
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddScoped<IVideoStorageService, CloudinaryVideoService>();
 
 // Cache
 builder.Services.AddMemoryCache();
@@ -178,6 +198,8 @@ else if (!firebaseEnabled)
 builder.Services.AddSingleton<IFirebasePresenceService, FirebasePresenceService>();
 builder.Services.AddSingleton<IFcmNotificationService, FcmNotificationService>();
 builder.Services.AddSingleton<IFirebaseChatService, FirebaseChatService>();
+builder.Services.AddScoped<NunchakuClub.Application.Common.Interfaces.IFirebaseAuthService,
+    NunchakuClub.Infrastructure.Services.Firebase.FirebaseAuthService>();
 
 // Fallback Classifier — Scoped vì dùng IKnowledgeBaseService (Scoped)
 builder.Services.AddScoped<IFallbackClassifierService, FallbackClassifierService>();
