@@ -131,16 +131,13 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
 
         _db.PendingUserMessages.Add(pending);
 
-        // Lưu session + tin nhắn của user
+        // BaseEntity.Id = Guid.NewGuid() nên pending.Id đã có ngay, không cần 2 lần SaveChanges
         var offlineSession = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
         offlineSession.Status = ChatSessionStatus.HumanHandoff;
         offlineSession.HandoffType = ChatHandoffType.Pending;
+        offlineSession.PendingMessageId = pending.Id;
         AppendUserMessage(offlineSession, request.UserMessage);
 
-        await _db.SaveChangesAsync(ct);
-
-        // Cập nhật PendingMessageId sau khi có ID từ DB
-        offlineSession.PendingMessageId = pending.Id;
         await _db.SaveChangesAsync(ct);
 
         await _fcm.NotifyAllAdminsAsync(request.UserMessage, pending.Id, ct);

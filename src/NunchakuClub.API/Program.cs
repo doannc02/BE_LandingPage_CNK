@@ -44,13 +44,13 @@ builder.Services.AddEndpointsApiExplorer();
 // Swagger
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo 
-    { 
-        Title = "Nunchaku Club API", 
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Nunchaku Club API",
         Version = "v1",
         Description = "API for Nunchaku Club CMS"
     });
-    
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token",
@@ -59,16 +59,16 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-    
+
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference 
-                { 
-                    Type = ReferenceType.SecurityScheme, 
-                    Id = "Bearer" 
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -87,7 +87,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(dataSource, o => o.UseVector())
            .UseSnakeCaseNamingConvention());
 
-builder.Services.AddScoped<IApplicationDbContext>(provider => 
+builder.Services.AddScoped<IApplicationDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 
 // JWT Settings
@@ -101,7 +101,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         var secretKey = jwtSettings["SecretKey"];
         if (string.IsNullOrEmpty(secretKey))
             throw new InvalidOperationException("JWT SecretKey is not configured");
-            
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -213,13 +213,13 @@ builder.Services.AddHostedService<NotificationRetryService>();
 
 // MediatR - Register from Application assembly
 var applicationAssembly = Assembly.Load("NunchakuClub.Application");
-builder.Services.AddMediatR(cfg => 
+builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(applicationAssembly));
 
 // CORS
-var corsOrigins = builder.Configuration["CorsOrigins"]?.Split(";") 
+var corsOrigins = builder.Configuration["CorsOrigins"]?.Split(";")
     ?? new[] { "http://localhost:3000" };
-    
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -235,14 +235,20 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure pipeline
-if (app.Environment.IsDevelopment())
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI(c =>
+//     {
+//         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nunchaku Club API v1");
+//     });
+// }
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nunchaku Club API v1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nunchaku Club API v1");
+});
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();

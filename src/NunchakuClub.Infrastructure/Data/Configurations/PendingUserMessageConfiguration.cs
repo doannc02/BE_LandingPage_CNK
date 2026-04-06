@@ -25,7 +25,10 @@ public class PendingUserMessageConfiguration : IEntityTypeConfiguration<PendingU
 
         builder.Property(x => x.Status)
             .IsRequired()
-            .HasDefaultValue(PendingMessageStatus.Pending);
+            .HasDefaultValue(PendingMessageStatus.Pending)
+            .ValueGeneratedNever(); // Prevent implicit ValueGeneratedOnAdd from HasDefaultValue,
+                                    // which causes Npgsql to emit INSERT…RETURNING and corrupts
+                                    // batch row-count tracking → DbUpdateConcurrencyException.
 
         builder.Property(x => x.AdminReply)
             .HasMaxLength(4000);
