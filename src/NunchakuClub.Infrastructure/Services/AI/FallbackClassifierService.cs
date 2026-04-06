@@ -137,15 +137,19 @@ public sealed class FallbackClassifierService : IFallbackClassifierService
     {
         try
         {
-            // Strip markdown code fences if Gemini wraps the JSON
+            // Tìm JSON object đầu tiên trong response — bất kể Gemini có thêm text/markdown trước sau
             var cleaned = json.Trim();
-            if (cleaned.StartsWith("```", StringComparison.Ordinal))
+            var start = cleaned.IndexOf('{');
+            var end = cleaned.LastIndexOf('}');
+
+            if (start < 0 || end <= start)
             {
-                var start = cleaned.IndexOf('{');
-                var end = cleaned.LastIndexOf('}');
-                if (start >= 0 && end > start)
-                    cleaned = cleaned[start..(end + 1)];
+                _logger.LogWarning("No JSON object found in classifier response. Raw (first 300 chars): {Preview}",
+                    json.Length > 300 ? json[..300] : json);
+                return null;
             }
+
+            cleaned = cleaned[start..(end + 1)];
 
             var raw = JsonSerializer.Deserialize<ClassifierRawResponse>(cleaned, JsonOpts);
             if (raw is null) return null;
@@ -165,7 +169,8 @@ public sealed class FallbackClassifierService : IFallbackClassifierService
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "JSON parse failed for classifier response");
+            _logger.LogWarning(ex, "JSON parse failed for classifier response. Raw (first 300 chars): {Raw}",
+                json.Length > 300 ? json[..300] : json);
             return null;
         }
     }
