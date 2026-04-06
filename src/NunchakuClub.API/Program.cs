@@ -128,9 +128,13 @@ builder.Services.AddAuthorization(options =>
             nameof(NunchakuClub.Domain.Entities.UserRole.SuperAdmin),
             nameof(NunchakuClub.Domain.Entities.UserRole.SubAdmin)));
 
-    // Bất kỳ user đã xác thực — đọc/ghi thông tin cá nhân
+    // Student trở lên — đọc/ghi nội dung khoá học, thông tin cá nhân
+    // Guest (role mặc định sau SSO) không vào được cho đến khi được admin xác nhận
     options.AddPolicy("RequireStudent", policy =>
-        policy.RequireAuthenticatedUser());
+        policy.RequireRole(
+            nameof(NunchakuClub.Domain.Entities.UserRole.Student),
+            nameof(NunchakuClub.Domain.Entities.UserRole.SubAdmin),
+            nameof(NunchakuClub.Domain.Entities.UserRole.SuperAdmin)));
 });
 
 // Application Services

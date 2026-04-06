@@ -14,19 +14,23 @@ using NunchakuClub.Domain.Entities;
 namespace NunchakuClub.API.Controllers;
 
 /// <summary>
-/// Endpoints dành riêng cho Admin/Editor để quản lý chat support.
+/// Endpoints dành riêng cho SuperAdmin/SubAdmin để quản lý chat support.
 ///
-/// Luồng:
+/// Luồng A — Admin offline khi user gửi tin:
 ///   1. User gửi message → AI không đủ confidence → Admin offline
-///   2. Message lưu vào pending_user_messages (PostgreSQL)
-///   3. Admin vào dashboard → GET /pending-messages → reply
+///   2. Message lưu vào pending_user_messages (PostgreSQL) + FCM push
+///   3. Admin mở dashboard → GET /pending-messages → reply
+///   4. Reply được ghi vào Firebase /notifications/{sessionId} → user thấy ngay
 ///
-///   Nếu Admin online tại thời điểm user gửi:
-///   → Firebase chat room được tạo, admin thấy qua Firebase subscription.
+/// Luồng B — Admin online khi user gửi tin:
+///   1. User gửi message → AI không đủ confidence → Admin online
+///   2. Firebase chat room được tạo, admin thấy qua Firebase subscription
+///   3. Admin gửi message qua POST /chats/{chatId}/message (hoặc Firebase SDK trực tiếp)
+///   4. Admin đóng cuộc chat qua POST /chats/{chatId}/close
 /// </summary>
 [ApiController]
 [Route("api/admin")]
-[Authorize(Roles = "Admin,Editor")]
+[Authorize(Policy = "RequireAdminArea")]
 public sealed class AdminChatController : ControllerBase
 {
     private readonly IApplicationDbContext _db;
@@ -40,6 +44,11 @@ public sealed class AdminChatController : ControllerBase
         _firebaseChat = firebaseChat;
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private string AdminId =>
+        User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown";
+
     // ── FCM token management ──────────────────────────────────────────────────
 
     /// <summary>
@@ -48,10 +57,7 @@ public sealed class AdminChatController : ControllerBase
     /// Admin gửi FCM device token sau khi đăng nhập + browser grant notification permission.
     /// Token được lưu vào PostgreSQL (users.fcm_token) để dùng làm fallback notification
     /// khi Firebase presence không có token (admin offline).
-    ///
-    /// Frontend gọi endpoint này mỗi lần:
-    ///   - Admin login
-    ///   - Token refresh (FCM token thay đổi)
+    /// Gọi mỗi lần: đăng nhập, hoặc FCM token bị refresh.
     /// </summary>
     [HttpPost("fcm-token")]
     public async Task<ActionResult<Result<bool>>> SaveFcmToken(
@@ -61,11 +67,10 @@ public sealed class AdminChatController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.Token))
             return BadRequest(Result<bool>.Failure("FCM token không được rỗng."));
 
-        var adminIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(adminIdStr, out var adminId))
+        if (!Guid.TryParse(AdminId, out var adminGuid))
             return Unauthorized(Result<bool>.Failure("Không xác định được admin ID."));
 
-        var user = await _db.Users.FindAsync([adminId], ct);
+        var user = await _db.Users.FindAsync([adminGuid], ct);
         if (user is null)
             return NotFound(Result<bool>.Failure("Không tìm thấy tài khoản."));
 
@@ -75,12 +80,13 @@ public sealed class AdminChatController : ControllerBase
         return Ok(Result<bool>.Success(true));
     }
 
-    // ── Pending messages (admin offline) ─────────────────────────────────────
+    // ── Pending messages (luồng A — admin offline) ───────────────────────────
 
     /// <summary>
-    /// GET /api/admin/pending-messages
+    /// GET /api/admin/pending-messages?status=Pending&amp;page=1&amp;pageSize=20
+    ///
     /// Lấy danh sách tin nhắn pending (user gửi khi không có admin online).
-    /// Hỗ trợ lọc theo status.
+    /// Mặc định trả về Pending + Assigned (chưa được giải quyết).
     /// </summary>
     [HttpGet("pending-messages")]
     public async Task<ActionResult<Result<List<PendingMessageDto>>>> GetPendingMessages(
@@ -120,9 +126,11 @@ public sealed class AdminChatController : ControllerBase
 
     /// <summary>
     /// POST /api/admin/pending-messages/{id}/reply
+    ///
     /// Admin reply một pending message. Backend:
     ///   1. Cập nhật PostgreSQL (status → Replied)
-    ///   2. Ghi notification vào Firebase /notifications/{sessionId}
+    ///   2. Lưu ConversationMessage với Role = Admin
+    ///   3. Ghi notification vào Firebase /notifications/{sessionId}
     ///      → nếu user vẫn còn mở tab, sẽ thấy reply ngay lập tức
     /// </summary>
     [HttpPost("pending-messages/{id:guid}/reply")]
@@ -138,16 +146,22 @@ public sealed class AdminChatController : ControllerBase
         if (message is null)
             return NotFound(Result<bool>.Failure($"Không tìm thấy pending message {id}."));
 
-        var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown";
-
         message.Status = PendingMessageStatus.Replied;
         message.AdminReply = dto.Text.Trim();
-        message.AssignedAdminId = adminId;
+        message.AssignedAdminId = AdminId;
         message.RepliedAt = DateTime.UtcNow;
+
+        // Lưu admin message vào conversation history
+        await AppendAdminMessageToSessionAsync(
+            sessionId: message.SessionId,
+            pendingMessageId: id,
+            content: dto.Text.Trim(),
+            ct: ct);
+
         await _db.SaveChangesAsync(ct);
 
         // Push reply notification to Firebase so user sees it if still online
-        await _firebaseChat.NotifyUserReplyAsync(message.SessionId, message.AdminReply, adminId, ct);
+        await _firebaseChat.NotifyUserReplyAsync(message.SessionId, message.AdminReply, AdminId, ct);
 
         return Ok(Result<bool>.Success(true));
     }
@@ -156,9 +170,10 @@ public sealed class AdminChatController : ControllerBase
 
     /// <summary>
     /// GET /api/admin/pending-count
-    /// Trả về số lượng pending messages chưa được xử lý.
-    /// Frontend dùng để hiển thị badge đỏ trên notification icon.
-    /// Poll mỗi 30–60 giây hoặc dùng SSE/WebSocket cho realtime.
+    ///
+    /// Số lượng pending messages chưa được xử lý (Pending + Assigned).
+    /// Dùng để hiển thị badge đỏ trên notification icon.
+    /// Poll mỗi 30–60 giây.
     /// </summary>
     [HttpGet("pending-count")]
     public async Task<ActionResult<Result<PendingCountDto>>> GetPendingCount(CancellationToken ct)
@@ -170,10 +185,9 @@ public sealed class AdminChatController : ControllerBase
         return Ok(Result<PendingCountDto>.Success(new PendingCountDto(count)));
     }
 
-    // ── Mark read / close ─────────────────────────────────────────────────────
-
     /// <summary>
     /// POST /api/admin/pending-messages/{id}/close
+    ///
     /// Đóng một pending message (admin không reply, đánh dấu đã xem / bỏ qua).
     /// Status → Closed. Không gửi notification cho user.
     /// </summary>
@@ -187,17 +201,31 @@ public sealed class AdminChatController : ControllerBase
             return NotFound(Result<bool>.Failure($"Không tìm thấy pending message {id}."));
 
         message.Status = PendingMessageStatus.Closed;
+
+        // Đóng session liên quan
+        var session = await _db.ChatSessions
+            .FirstOrDefaultAsync(
+                s => s.PendingMessageId == id && s.Status != ChatSessionStatus.Closed, ct);
+
+        if (session is not null)
+        {
+            session.Status = ChatSessionStatus.Closed;
+            session.ClosedAt = DateTime.UtcNow;
+        }
+
         await _db.SaveChangesAsync(ct);
 
         return Ok(Result<bool>.Success(true));
     }
 
-    // ── Active Firebase chat rooms ────────────────────────────────────────────
+    // ── Active Firebase chat rooms (luồng B — admin online) ──────────────────
 
     /// <summary>
     /// POST /api/admin/chats/{chatId}/message
+    ///
     /// Admin gửi message vào một chat room đang active trong Firebase.
-    /// Dùng khi admin muốn gửi message qua backend thay vì Firebase SDK trực tiếp.
+    /// Message đồng thời được persist vào PostgreSQL (conversation_messages).
+    /// Dùng khi admin muốn gửi qua backend thay vì Firebase SDK trực tiếp.
     /// </summary>
     [HttpPost("chats/{chatId}/message")]
     public async Task<ActionResult<Result<bool>>> SendChatMessage(
@@ -208,16 +236,25 @@ public sealed class AdminChatController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.Text))
             return BadRequest(Result<bool>.Failure("Nội dung message không được rỗng."));
 
-        var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "admin";
+        // Ghi vào Firebase Realtime Database
+        await _firebaseChat.SendMessageAsync(chatId, $"admin:{AdminId}", dto.Text.Trim(), ct);
 
-        await _firebaseChat.SendMessageAsync(chatId, $"admin:{adminId}", dto.Text.Trim(), ct);
+        // Persist vào PostgreSQL
+        await AppendAdminMessageToSessionAsync(
+            firebaseChatRoomId: chatId,
+            content: dto.Text.Trim(),
+            ct: ct);
+
+        await _db.SaveChangesAsync(ct);
 
         return Ok(Result<bool>.Success(true));
     }
 
     /// <summary>
     /// POST /api/admin/chats/{chatId}/close
+    ///
     /// Đóng một chat room trong Firebase (status → "closed").
+    /// Cập nhật trạng thái ChatSession → Closed trong PostgreSQL.
     /// </summary>
     [HttpPost("chats/{chatId}/close")]
     public async Task<ActionResult<Result<bool>>> CloseChat(
@@ -225,7 +262,64 @@ public sealed class AdminChatController : ControllerBase
         CancellationToken ct)
     {
         await _firebaseChat.CloseChatAsync(chatId, ct);
+
+        // Đóng session trong PostgreSQL
+        var session = await _db.ChatSessions
+            .FirstOrDefaultAsync(
+                s => s.FirebaseChatRoomId == chatId && s.Status != ChatSessionStatus.Closed, ct);
+
+        if (session is not null)
+        {
+            session.Status = ChatSessionStatus.Closed;
+            session.ClosedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+        }
+
         return Ok(Result<bool>.Success(true));
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Tìm session theo FirebaseChatRoomId và thêm admin message.
+    /// </summary>
+    private async Task AppendAdminMessageToSessionAsync(
+        string? firebaseChatRoomId = null,
+        Guid? pendingMessageId = null,
+        string? sessionId = null,
+        string content = "",
+        CancellationToken ct = default)
+    {
+        ChatSession? session = null;
+
+        if (firebaseChatRoomId is not null)
+        {
+            session = await _db.ChatSessions
+                .FirstOrDefaultAsync(s => s.FirebaseChatRoomId == firebaseChatRoomId, ct);
+        }
+        else if (pendingMessageId.HasValue)
+        {
+            session = await _db.ChatSessions
+                .FirstOrDefaultAsync(s => s.PendingMessageId == pendingMessageId, ct);
+        }
+        else if (sessionId is not null)
+        {
+            session = await _db.ChatSessions
+                .Where(s => s.SessionId == sessionId)
+                .OrderByDescending(s => s.CreatedAt)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        if (session is null) return;
+
+        _db.ConversationMessages.Add(new ConversationMessage
+        {
+            ChatSessionId = session.Id,
+            SessionId = session.SessionId,
+            Role = ConversationMessageRole.Admin,
+            Content = content,
+            SenderAdminId = AdminId
+        });
     }
 }
 

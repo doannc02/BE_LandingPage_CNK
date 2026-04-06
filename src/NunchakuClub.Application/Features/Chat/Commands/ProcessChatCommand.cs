@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Application.Features.Chat.DTOs;
@@ -80,9 +81,15 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
             "Chat classify: Session={Session} Confidence={Conf:F2} NeedsHuman={Human} Category={Cat}",
             request.SessionId, decision.Confidence, decision.NeedsHuman, decision.Category);
 
-        // 2. AI is confident enough → return answer directly
+        // 2. AI is confident enough → lưu lịch sử, trả về answer
         if (!decision.NeedsHuman && decision.Confidence >= ConfidenceThreshold)
+        {
+            var session = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
+            AppendMessages(session, request.UserMessage, botReply: decision.Answer);
+            await _db.SaveChangesAsync(ct);
+
             return new ProcessChatResult(ChatResponseType.AI, decision.Answer, null, null);
+        }
 
         // 3. Fallback: check for online admin
         var onlineAdmin = await _presence.GetFirstOnlineAdminAsync(ct);
@@ -99,10 +106,18 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
                 request.UserMessage,
                 ct);
 
+            // Lưu session + tin nhắn đầu tiên của user
+            var session = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
+            session.Status = ChatSessionStatus.HumanHandoff;
+            session.HandoffType = ChatHandoffType.Firebase;
+            session.FirebaseChatRoomId = chatRoomId;
+            AppendUserMessage(session, request.UserMessage);
+            await _db.SaveChangesAsync(ct);
+
             return new ProcessChatResult(ChatResponseType.HumanOnline, null, chatRoomId, null);
         }
 
-        // 4. No admin online → save pending message + push notification
+        // 4. No admin online → lưu pending message + push notification
         _logger.LogInformation(
             "No admin online — saving pending message for session {Session}", request.SessionId);
 
@@ -115,10 +130,72 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
         };
 
         _db.PendingUserMessages.Add(pending);
+
+        // Lưu session + tin nhắn của user
+        var offlineSession = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
+        offlineSession.Status = ChatSessionStatus.HumanHandoff;
+        offlineSession.HandoffType = ChatHandoffType.Pending;
+        AppendUserMessage(offlineSession, request.UserMessage);
+
+        await _db.SaveChangesAsync(ct);
+
+        // Cập nhật PendingMessageId sau khi có ID từ DB
+        offlineSession.PendingMessageId = pending.Id;
         await _db.SaveChangesAsync(ct);
 
         await _fcm.NotifyAllAdminsAsync(request.UserMessage, pending.Id, ct);
 
         return new ProcessChatResult(ChatResponseType.LeftMessage, null, null, pending.Id.ToString());
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Trả về session đang active (Status != Closed) cho sessionId.
+    /// Nếu chưa có hoặc tất cả đã Closed → tạo mới.
+    /// </summary>
+    private async Task<ChatSession> GetOrCreateSessionAsync(
+        string sessionId, string? userId, CancellationToken ct)
+    {
+        var session = await _db.ChatSessions
+            .FirstOrDefaultAsync(
+                s => s.SessionId == sessionId && s.Status != ChatSessionStatus.Closed,
+                ct);
+
+        if (session is not null)
+            return session;
+
+        session = new ChatSession
+        {
+            SessionId = sessionId,
+            UserId = Guid.TryParse(userId, out var uid) ? uid : null
+        };
+        _db.ChatSessions.Add(session);
+        return session;
+    }
+
+    private static void AppendUserMessage(ChatSession session, string content)
+    {
+        session.Messages.Add(new ConversationMessage
+        {
+            SessionId = session.SessionId,
+            Role = ConversationMessageRole.User,
+            Content = content
+        });
+    }
+
+    private static void AppendMessages(ChatSession session, string userMessage, string? botReply)
+    {
+        AppendUserMessage(session, userMessage);
+
+        if (!string.IsNullOrEmpty(botReply))
+        {
+            session.Messages.Add(new ConversationMessage
+            {
+                SessionId = session.SessionId,
+                Role = ConversationMessageRole.Bot,
+                Content = botReply
+            });
+        }
     }
 }

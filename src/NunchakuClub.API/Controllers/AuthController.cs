@@ -1,7 +1,4 @@
-using System;
-using System.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NunchakuClub.Application.Features.Auth.Commands;
 using System.Threading.Tasks;
@@ -53,19 +50,6 @@ public class AuthController : ControllerBase
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
-    /// <summary>
-    /// Phân quyền — chỉ SuperAdmin được phép gọi endpoint này.
-    /// Nâng/hạ role của người dùng khác và đồng bộ xuống Firebase custom claims.
-    /// </summary>
-    [HttpPost("assign-role")]
-    [Authorize(Policy = "RequireSuperAdmin")]
-    public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
-    {
-        var command = new AssignRoleCommand(request.TargetUserId, request.Role);
-        var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok() : BadRequest(result.Error);
-    }
-
     // ── Request DTOs ──────────────────────────────────────────────────────────
 
     public class RefreshTokenRequest
@@ -76,12 +60,5 @@ public class AuthController : ControllerBase
     public class ExchangeTokenRequest
     {
         public string FirebaseIdToken { get; set; } = string.Empty;
-    }
-
-    public class AssignRoleRequest
-    {
-        public Guid TargetUserId { get; set; }
-        /// <summary>SuperAdmin | SubAdmin | Student</summary>
-        public string Role { get; set; } = string.Empty;
     }
 }
