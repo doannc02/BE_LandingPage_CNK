@@ -26,6 +26,8 @@ public interface IApplicationDbContext
     DbSet<ActivityLog> ActivityLogs { get; }
     DbSet<KnowledgeDocument> KnowledgeDocuments { get; }
     DbSet<PendingUserMessage> PendingUserMessages { get; }
+    DbSet<ChatSession> ChatSessions { get; }
+    DbSet<ConversationMessage> ConversationMessages { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

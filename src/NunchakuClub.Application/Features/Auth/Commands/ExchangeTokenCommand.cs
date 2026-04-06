@@ -12,7 +12,9 @@ namespace NunchakuClub.Application.Features.Auth.Commands;
 
 /// <summary>
 /// SSO Identity Exchange — đổi Firebase ID Token lấy JWT nội bộ.
-/// Tự động tạo user mới (Student) nếu đây là lần đăng nhập đầu tiên.
+/// - User mới (chưa có trong DB): tạo với role Guest — admin phải cấp quyền Student sau.
+/// - User đã tồn tại (khớp theo FirebaseUid hoặc Email): giữ nguyên role hiện tại.
+///   Nếu user đã được admin cấp Student (hoặc cao hơn) thì role đó được đồng bộ xuống Firebase claims.
 /// </summary>
 public record ExchangeTokenCommand(string FirebaseIdToken) : IRequest<Result<AuthResponse>>;
 
@@ -49,7 +51,8 @@ public class ExchangeTokenCommandHandler : IRequestHandler<ExchangeTokenCommand,
 
         if (user is null)
         {
-            // First login — tạo mới với role Student
+            // Lần đầu đăng nhập Google — tạo với role Guest.
+            // Admin phải dùng POST /api/users/{id}/assign-role để cấp Student.
             var username = SanitizeUsername(tokenResult.Email.Split('@')[0]);
             var usernameExists = await _context.Users.AnyAsync(u => u.Username == username, cancellationToken);
             if (usernameExists)
@@ -63,7 +66,7 @@ public class ExchangeTokenCommandHandler : IRequestHandler<ExchangeTokenCommand,
                 AvatarUrl = tokenResult.PhotoUrl,
                 PasswordHash = string.Empty, // Firebase users không dùng password
                 FirebaseUid = tokenResult.Uid,
-                Role = UserRole.Student,
+                Role = UserRole.Guest,
                 Status = UserStatus.Active,
                 EmailVerified = true
             };
@@ -72,7 +75,8 @@ public class ExchangeTokenCommandHandler : IRequestHandler<ExchangeTokenCommand,
         }
         else
         {
-            // Sync FirebaseUid nếu user đăng ký trước khi có Firebase
+            // User đã tồn tại — giữ nguyên role (có thể đã được admin cấp Student/SubAdmin).
+            // Nếu chưa có FirebaseUid (đăng ký bằng email/password trước) thì liên kết tài khoản Google.
             if (string.IsNullOrEmpty(user.FirebaseUid))
                 user.FirebaseUid = tokenResult.Uid;
         }

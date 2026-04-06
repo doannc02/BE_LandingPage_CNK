@@ -121,7 +121,7 @@ public class UsersController : ControllerBase
     {
         var command = new AssignRoleCommand(id, request.Role);
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok() : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
     // ── DELETE /api/users/{id} ────────────────────────────────────────────────
