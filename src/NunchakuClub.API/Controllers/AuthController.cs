@@ -20,14 +20,14 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpPost("refresh")]
@@ -35,19 +35,19 @@ public class AuthController : ControllerBase
     {
         var command = new RefreshTokenCommand(request.RefreshToken);
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     /// <summary>
     /// SSO Identity Exchange — đổi Firebase ID Token lấy JWT nội bộ.
-    /// Tự động tạo user mới với role Student nếu là lần đăng nhập đầu tiên.
+    /// Tự động tạo user mới với role Guest nếu là lần đăng nhập đầu tiên.
     /// </summary>
     [HttpPost("exchange-token")]
     public async Task<IActionResult> ExchangeToken([FromBody] ExchangeTokenRequest request)
     {
         var command = new ExchangeTokenCommand(request.FirebaseIdToken);
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
