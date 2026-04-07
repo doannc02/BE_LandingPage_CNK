@@ -295,6 +295,41 @@ if (app.Environment.IsDevelopment())
     }
 }
 
+// Seed SuperAdmin account — tạo nếu chưa tồn tại, idempotent
+using (var seedScope = app.Services.CreateScope())
+{
+    var dbContext = seedScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var passwordHasher = seedScope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    try
+    {
+        const string adminEmail = "admin@connhikhuchadong.vn";
+        var adminExists = await dbContext.Users.AnyAsync(u => u.Email == adminEmail);
+        if (!adminExists)
+        {
+            dbContext.Users.Add(new NunchakuClub.Domain.Entities.User
+            {
+                Email = adminEmail,
+                Username = "superadmin",
+                FullName = "Super Admin",
+                PasswordHash = passwordHasher.HashPassword("Admin@123"),
+                Role = NunchakuClub.Domain.Entities.UserRole.SuperAdmin,
+                Status = NunchakuClub.Domain.Entities.UserStatus.Active,
+                EmailVerified = true
+            });
+            await dbContext.SaveChangesAsync();
+            Log.Information("SuperAdmin account created: {Email}", adminEmail);
+        }
+        else
+        {
+            Log.Information("SuperAdmin account already exists — skipping seed");
+        }
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Failed to seed SuperAdmin account");
+    }
+}
+
 // Seed knowledge base (embed CLB documents into pgvector)
 // Chỉ chạy khi table rỗng — idempotent, an toàn để chạy mỗi startup
 using (var seedScope = app.Services.CreateScope())

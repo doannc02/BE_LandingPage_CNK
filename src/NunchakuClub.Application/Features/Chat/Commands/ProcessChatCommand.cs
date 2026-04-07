@@ -86,7 +86,17 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
         {
             var session = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
             AppendMessages(session, request.UserMessage, botReply: decision.Answer);
-            await _db.SaveChangesAsync(ct);
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "Concurrency conflict saving AI chat session {Session} — retrying", request.SessionId);
+                foreach (var entry in ex.Entries)
+                    await entry.ReloadAsync(ct);
+                await _db.SaveChangesAsync(ct);
+            }
 
             return new ProcessChatResult(ChatResponseType.AI, decision.Answer, null, null);
         }
@@ -112,7 +122,17 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
             session.HandoffType = ChatHandoffType.Firebase;
             session.FirebaseChatRoomId = chatRoomId;
             AppendUserMessage(session, request.UserMessage);
-            await _db.SaveChangesAsync(ct);
+            try
+            {
+                await _db.SaveChangesAsync(ct);
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "Concurrency conflict saving human handoff session {Session} — retrying", request.SessionId);
+                foreach (var entry in ex.Entries)
+                    await entry.ReloadAsync(ct);
+                await _db.SaveChangesAsync(ct);
+            }
 
             return new ProcessChatResult(ChatResponseType.HumanOnline, null, chatRoomId, null);
         }
@@ -138,7 +158,18 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
         offlineSession.PendingMessageId = pending.Id;
         AppendUserMessage(offlineSession, request.UserMessage);
 
-        await _db.SaveChangesAsync(ct);
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
+        {
+            // Session bị xóa giữa load và save (concurrent request) — refresh và thử lại
+            _logger.LogWarning(ex, "Concurrency conflict saving chat session {Session} — refreshing and retrying", request.SessionId);
+            foreach (var entry in ex.Entries)
+                await entry.ReloadAsync(ct);
+            await _db.SaveChangesAsync(ct);
+        }
 
         await _fcm.NotifyAllAdminsAsync(request.UserMessage, pending.Id, ct);
 
