@@ -1,16 +1,17 @@
+using System;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Application.Common.Models;
 using NunchakuClub.Application.Features.Auth.DTOs;
 using NunchakuClub.Domain.Entities;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NunchakuClub.Application.Features.Auth.Commands;
 
-public record RefreshTokenCommand(string RefreshToken) : IRequest<Result<AuthResponse>>;
+public record RefreshTokenCommand(string AccessToken, string RefreshToken) : IRequest<Result<AuthResponse>>;
 
 public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<AuthResponse>>
 {
@@ -29,10 +30,21 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         RefreshTokenCommand request,
         CancellationToken cancellationToken)
     {
+        var principal = _jwtTokenGenerator.GetPrincipalFromExpiredToken(request.AccessToken);
+        if (principal == null)
+            return Result<AuthResponse>.Failure("Invalid access token");
+
+        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return Result<AuthResponse>.Failure("Invalid access token claims");
+
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null)
+            return Result<AuthResponse>.Failure("User not found");
+
+        if (user.RefreshToken != request.RefreshToken)
             return Result<AuthResponse>.Failure("Invalid refresh token");
 
         if (user.RefreshTokenExpiryTime == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)

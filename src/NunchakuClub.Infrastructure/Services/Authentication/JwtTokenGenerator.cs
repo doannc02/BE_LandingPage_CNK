@@ -1,3 +1,4 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -6,7 +7,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Domain.Entities;
-using System;
 
 
 namespace NunchakuClub.Infrastructure.Services.Authentication;
@@ -58,7 +58,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
-        
+
         try
         {
             tokenHandler.ValidateToken(token, new TokenValidationParameters
@@ -72,12 +72,42 @@ public class JwtTokenGenerator : IJwtTokenGenerator
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             }, out _);
-            
+
             return true;
         }
         catch
         {
             return false;
+        }
+    }
+
+    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
+
+        try
+        {
+            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidIssuer = _jwtSettings.Issuer,
+                ValidateAudience = true,
+                ValidAudience = _jwtSettings.Audience,
+                ValidateLifetime = false   // cho phép token đã hết hạn
+            }, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwt ||
+                !jwt.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            return principal;
+        }
+        catch
+        {
+            return null;
         }
     }
 }
