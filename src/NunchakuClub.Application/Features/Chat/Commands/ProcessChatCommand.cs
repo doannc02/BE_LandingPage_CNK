@@ -85,8 +85,9 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
         if (!decision.NeedsHuman && decision.Confidence >= ConfidenceThreshold)
         {
             var session = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
-            AppendMessages(session, request.UserMessage, botReply: decision.Answer);
-            await _db.SaveChangesAsync(ct);
+            AddUserMessage(session, request.UserMessage);
+            AddBotMessage(session, decision.Answer);
+            await SaveWithRetryAsync(ct);
 
             return new ProcessChatResult(ChatResponseType.AI, decision.Answer, null, null);
         }
@@ -111,8 +112,8 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
             session.Status = ChatSessionStatus.HumanHandoff;
             session.HandoffType = ChatHandoffType.Firebase;
             session.FirebaseChatRoomId = chatRoomId;
-            AppendUserMessage(session, request.UserMessage);
-            await _db.SaveChangesAsync(ct);
+            AddUserMessage(session, request.UserMessage);
+            await SaveWithRetryAsync(ct);
 
             return new ProcessChatResult(ChatResponseType.HumanOnline, null, chatRoomId, null);
         }
@@ -128,7 +129,6 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
             UserId = request.UserId,
             NextNotificationAt = DateTime.UtcNow
         };
-
         _db.PendingUserMessages.Add(pending);
 
         // BaseEntity.Id = Guid.NewGuid() nên pending.Id đã có ngay, không cần 2 lần SaveChanges
@@ -136,9 +136,9 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
         offlineSession.Status = ChatSessionStatus.HumanHandoff;
         offlineSession.HandoffType = ChatHandoffType.Pending;
         offlineSession.PendingMessageId = pending.Id;
-        AppendUserMessage(offlineSession, request.UserMessage);
+        AddUserMessage(offlineSession, request.UserMessage);
 
-        await _db.SaveChangesAsync(ct);
+        await SaveWithRetryAsync(ct);
 
         await _fcm.NotifyAllAdminsAsync(request.UserMessage, pending.Id, ct);
 
@@ -171,28 +171,49 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
         return session;
     }
 
-    private static void AppendUserMessage(ChatSession session, string content)
+    /// <summary>
+    /// Thêm ConversationMessage trực tiếp qua DbSet với FK explicit.
+    /// Tránh bug EF Core DetectChanges khi session chưa được Include Messages.
+    /// </summary>
+    private void AddUserMessage(ChatSession session, string content)
     {
-        session.Messages.Add(new ConversationMessage
+        _db.ConversationMessages.Add(new ConversationMessage
         {
+            ChatSessionId = session.Id,
             SessionId = session.SessionId,
             Role = ConversationMessageRole.User,
             Content = content
         });
     }
 
-    private static void AppendMessages(ChatSession session, string userMessage, string? botReply)
+    private void AddBotMessage(ChatSession session, string content)
     {
-        AppendUserMessage(session, userMessage);
+        if (string.IsNullOrEmpty(content)) return;
 
-        if (!string.IsNullOrEmpty(botReply))
+        _db.ConversationMessages.Add(new ConversationMessage
         {
-            session.Messages.Add(new ConversationMessage
-            {
-                SessionId = session.SessionId,
-                Role = ConversationMessageRole.Bot,
-                Content = botReply
-            });
+            ChatSessionId = session.Id,
+            SessionId = session.SessionId,
+            Role = ConversationMessageRole.Bot,
+            Content = content
+        });
+    }
+
+    /// <summary>
+    /// Lưu changes, tự động reload và retry một lần nếu bị concurrency conflict.
+    /// </summary>
+    private async Task SaveWithRetryAsync(CancellationToken ct)
+    {
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogWarning(ex, "Concurrency conflict on SaveChanges — reloading and retrying once");
+            foreach (var entry in ex.Entries)
+                await entry.ReloadAsync(ct);
+            await _db.SaveChangesAsync(ct);
         }
     }
 }

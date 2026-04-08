@@ -11,7 +11,7 @@ public class User : AuditableEntity
     public string FullName { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public string? AvatarUrl { get; set; }
-    public UserRole Role { get; set; } = UserRole.Student;
+    public UserRole Role { get; set; } = UserRole.Guest;
     public UserStatus Status { get; set; } = UserStatus.Active;
     public bool EmailVerified { get; set; }
     public DateTime? LastLoginAt { get; set; }

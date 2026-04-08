@@ -1,7 +1,10 @@
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NunchakuClub.Application.Features.Auth.Commands;
-using System.Threading.Tasks;
 
 namespace NunchakuClub.API.Controllers;
 
@@ -33,8 +36,20 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
     {
-        var command = new RefreshTokenCommand(request.RefreshToken);
+        var command = new RefreshTokenCommand(request.AccessToken, request.RefreshToken);
         var result = await _mediator.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var result = await _mediator.Send(new LogoutCommand(userId));
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
@@ -54,6 +69,7 @@ public class AuthController : ControllerBase
 
     public class RefreshTokenRequest
     {
+        public string AccessToken { get; set; } = string.Empty;
         public string RefreshToken { get; set; } = string.Empty;
     }
 
