@@ -16,4 +16,5 @@ services:
     volumes:
       - ./Logs:/app/Logs
       - ./src/NunchakuClub.API/appsettings.json:/app/appsettings.json:ro
+      - ./src/NunchakuClub.API/secrets:/app/secrets:ro
     working_dir: /app
