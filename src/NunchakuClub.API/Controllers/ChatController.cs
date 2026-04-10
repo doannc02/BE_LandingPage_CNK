@@ -206,6 +206,26 @@ public sealed class ChatController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// GET /api/v1/chat/notifications?sessionId={sessionId}
+    ///
+    /// Trả về reply của admin cho tin nhắn đang chờ (LeftMessage mode).
+    /// Dùng cho frontend polling — trả về null nếu chưa có reply.
+    /// </summary>
+    [HttpGet("notifications")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Result<ChatNotificationDto?>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Result<ChatNotificationDto?>>> GetNotification(
+        [FromQuery] string sessionId,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(sessionId))
+            return BadRequest(Result<ChatNotificationDto?>.Failure("sessionId is required"));
+
+        var result = await _mediator.Send(new GetChatNotificationQuery(sessionId), ct);
+        return Ok(result);
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private bool IsAuthorized()
