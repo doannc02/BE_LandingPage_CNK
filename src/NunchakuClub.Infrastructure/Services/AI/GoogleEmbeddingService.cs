@@ -20,11 +20,9 @@ public sealed class GoogleEmbeddingService : NunchakuClub.Application.Common.Int
     private readonly string _apiKey;
     private readonly ILogger<GoogleEmbeddingService> _logger;
 
-    // Try v1 stable first, then v1beta if needed
-    // Đổi 2 constant này:
-private const string BaseUrlV1 = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent";
-private const string BaseUrlFallback = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2-preview:embedContent";
-
+    // gemini-embedding-001 → 768 dims (matches vector(768) DB column)
+    // gemini-embedding-2-preview → 3072 dims (incompatible — do NOT use as fallback)
+    private const string EmbedUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent";
 
     public GoogleEmbeddingService(
         IOptions<GeminiSettings> opts,
@@ -42,45 +40,33 @@ private const string BaseUrlFallback = "https://generativelanguage.googleapis.co
 
     public async Task<float[]> GenerateAsync(string text, CancellationToken ct = default)
     {
-        // Try text-embedding-004 via v1 (stable), fall back to embedding-001 via v1beta
-        var candidates = new[]
-    {
-        (Url: $"{BaseUrlV1}?key={_apiKey}",       Model: "models/gemini-embedding-001"),
-        (Url: $"{BaseUrlFallback}?key={_apiKey}", Model: "models/gemini-embedding-2-preview"),
-    };
+        const string model = "models/gemini-embedding-001";
+        var url = $"{EmbedUrl}?key={_apiKey}";
 
-
-        foreach (var (url, model) in candidates)
+        var request = new EmbedRequest
         {
-            var request = new EmbedRequest
+            Model = model,
+            Content = new EmbedContent
             {
-                Model = model,
-                Content = new EmbedContent
-                {
-                    Parts = new List<EmbedPart> { new() { Text = text } }
-                }
-            };
-
-            using var response = await _http.PostAsJsonAsync(url, request, ct);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<EmbedResponse>(cancellationToken: ct);
-                if (result?.Embedding?.Values is { Count: > 0 } values)
-                {
-                    _logger.LogDebug("Embedding generated via {Model}", model);
-                    return values.ToArray();
-                }
+                Parts = new List<EmbedPart> { new() { Text = text } }
             }
+        };
 
-            var errorBody = await response.Content.ReadAsStringAsync(ct);
-            _logger.LogWarning("Embedding model {Model} returned {StatusCode} — trying next. Body: {Body}",
-                model, (int)response.StatusCode, errorBody);
+        using var response = await _http.PostAsJsonAsync(url, request, ct);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<EmbedResponse>(cancellationToken: ct);
+            if (result?.Embedding?.Values is { Count: > 0 } values)
+            {
+                _logger.LogDebug("Embedding generated via {Model}", model);
+                return values.ToArray();
+            }
         }
 
+        var errorBody = await response.Content.ReadAsStringAsync(ct);
         throw new InvalidOperationException(
-            "All embedding models failed. Please create a new API key at https://aistudio.google.com/apikey " +
-            "and update GeminiSettings:ApiKey in appsettings.json.");
+            $"Embedding model {model} returned {(int)response.StatusCode}. Body: {errorBody}");
     }
 
     // ── JSON DTOs ─────────────────────────────────────────────────────────────
