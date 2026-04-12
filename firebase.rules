@@ -22,6 +22,12 @@
       }
     },
 
+    // ── Chats — Index cho Least-Loaded Admin Routing ─────────────────────
+    // Backend query: orderBy="metadata/status"&equalTo="open" để đếm workload
+    "chats": {
+      ".indexOn": ["metadata/status"]
+    },
+
     // ── Chat Rooms ─────────────────────────────────────────────────────────
     "chatRooms": {
       // Đọc danh sách rooms: bất kỳ user đã xác thực

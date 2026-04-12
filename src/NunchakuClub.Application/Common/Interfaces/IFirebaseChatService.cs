@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -5,6 +6,13 @@ namespace NunchakuClub.Application.Common.Interfaces;
 
 public interface IFirebaseChatService
 {
+    /// <summary>
+    /// Truy vấn Firebase RTDB: lấy tất cả chat rooms có status="open",
+    /// GroupBy theo adminId → trả về Dictionary&lt;adminId, openChatCount&gt;.
+    /// Dùng cho chiến lược Least-Loaded khi điều phối admin.
+    /// </summary>
+    Task<Dictionary<string, int>> GetAdminWorkloadsAsync(CancellationToken ct = default);
+
     /// <summary>
     /// Tạo chat room trong Firebase Realtime Database, ghi metadata và message đầu tiên của user.
     /// Trả về chatRoomId để frontend subscribe realtime.

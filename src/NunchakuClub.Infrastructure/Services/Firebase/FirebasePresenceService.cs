@@ -62,13 +62,27 @@ public sealed class FirebasePresenceService : IFirebasePresenceService
         }
     }
 
-    public async Task<OnlineAdmin?> GetFirstOnlineAdminAsync(CancellationToken ct = default)
+    /// <inheritdoc />
+    /// <remarks>
+    /// Trả về danh sách đầy đủ admin đang online (Online == true trong /presence/admins).
+    /// Kết hợp với <see cref="IFirebaseChatService.GetAdminWorkloadsAsync"/> để chọn
+    /// admin có ít phòng chat "open" nhất (chiến lược Least-Loaded).
+    /// </remarks>
+    public async Task<IReadOnlyList<OnlineAdmin>> GetOnlineAdminsAsync(CancellationToken ct = default)
     {
         var admins = await ReadAllPresenceAsync(ct);
         return admins.Values
             .Where(a => a.Online)
             .Select(a => new OnlineAdmin(a.AdminId, a.FcmToken, a.DisplayName))
-            .FirstOrDefault();
+            .ToList();
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Shortcut: lấy admin online đầu tiên — delegate sang <see cref="GetOnlineAdminsAsync"/>.</remarks>
+    public async Task<OnlineAdmin?> GetFirstOnlineAdminAsync(CancellationToken ct = default)
+    {
+        var onlineAdmins = await GetOnlineAdminsAsync(ct);
+        return onlineAdmins.FirstOrDefault();
     }
 
     public async Task<IReadOnlyList<string>> GetAllAdminFcmTokensAsync(CancellationToken ct = default)

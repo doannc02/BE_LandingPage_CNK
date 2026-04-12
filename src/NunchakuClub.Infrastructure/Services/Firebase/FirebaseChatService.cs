@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -55,6 +57,76 @@ public sealed class FirebaseChatService : IFirebaseChatService
             _logger.LogWarning(
                 "Firebase service account not found at '{Path}' — chat room creation disabled",
                 _settings.ServiceAccountPath);
+        }
+    }
+
+    // ── Least-Loaded: Admin Workload Query ────────────────────────────────────
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// <para>
+    /// Truy vấn Firebase REST API với index <c>metadata/status</c> (cấu hình trong firebase.rules).
+    /// Chỉ trả về các chat rooms có <c>status == "open"</c>, sau đó GroupBy <c>adminId</c>
+    /// để đếm số phòng đang xử lý của từng admin.
+    /// </para>
+    /// <para>
+    /// Admin nào không xuất hiện trong kết quả → workload = 0 (đang rảnh hoàn toàn).
+    /// </para>
+    /// </remarks>
+    public async Task<Dictionary<string, int>> GetAdminWorkloadsAsync(CancellationToken ct = default)
+    {
+        if (_credential is null)
+        {
+            _logger.LogDebug("Firebase not configured — returning empty workloads");
+            return new Dictionary<string, int>();
+        }
+
+        try
+        {
+            var token = await GetTokenAsync(ct);
+
+            // REST query sử dụng index "metadata/status" để chỉ lấy chat rooms đang open
+            // Ref: https://firebase.google.com/docs/database/rest/retrieve-data#section-rest-filtering
+            var url = $"{_settings.DatabaseUrl.TrimEnd('/')}/chats.json"
+                    + $"?orderBy=\"metadata/status\"&equalTo=\"open\"&access_token={token}";
+
+            var json = await _http.GetStringAsync(url, ct);
+
+            if (string.IsNullOrWhiteSpace(json) || json == "null")
+            {
+                _logger.LogDebug("No open chats found in Firebase — all admins have zero workload");
+                return new Dictionary<string, int>();
+            }
+
+            // Parse response: { "chat_xxx": { "metadata": { "adminId": "...", ... }, ... }, ... }
+            using var doc = JsonDocument.Parse(json);
+            var workloads = new Dictionary<string, int>();
+
+            foreach (var chatEntry in doc.RootElement.EnumerateObject())
+            {
+                // Mỗi chatEntry.Value là một chat room, trích xuất metadata.adminId
+                if (chatEntry.Value.TryGetProperty("metadata", out var metadata) &&
+                    metadata.TryGetProperty("adminId", out var adminIdProp))
+                {
+                    var adminId = adminIdProp.GetString();
+                    if (!string.IsNullOrEmpty(adminId))
+                    {
+                        workloads[adminId] = workloads.GetValueOrDefault(adminId, 0) + 1;
+                    }
+                }
+            }
+
+            _logger.LogDebug(
+                "Admin workloads from Firebase RTDB: {Workloads}",
+                string.Join(", ", workloads.Select(kv => $"{kv.Key}={kv.Value}")));
+
+            return workloads;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to query admin workloads from Firebase RTDB");
+            // Trả về rỗng thay vì throw — caller vẫn có thể fallback chọn admin đầu tiên
+            return new Dictionary<string, int>();
         }
     }
 

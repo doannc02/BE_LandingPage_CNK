@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
@@ -180,6 +181,48 @@ public sealed class ChatController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "ProcessMessage failed for session {Session}", request.SessionId);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                Result<ProcessChatResponseDto>.Failure("Đã xảy ra lỗi xử lý. Vui lòng thử lại sau."));
+        }
+    }
+
+    /// <summary>
+    /// POST /api/v1/chat/request-human
+    ///
+    /// Yêu cầu gặp nhân viên hỗ trợ trực tiếp ngay từ đầu(chuyển thẳng đến Least-Loaded Admin), bỏ qua AI.
+    /// </summary>
+    [HttpPost("request-human")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Result<ProcessChatResponseDto>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Result<ProcessChatResponseDto>>> RequestHuman(
+        [FromBody] ChatMessageRequestDto request,
+        CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(Result<ProcessChatResponseDto>.Failure("Dữ liệu đầu vào không hợp lệ."));
+
+        var trimmedMessage = string.IsNullOrWhiteSpace(request.Message) 
+                           ? "Tôi muốn gặp nhân viên hỗ trợ." 
+                           : request.Message.Trim();
+
+        // Lấy userId từ JWT nếu user đã đăng nhập (null = anonymous)
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var command = new ProcessChatCommand(
+            SessionId: request.SessionId,
+            UserMessage: trimmedMessage,
+            History: request.History?.Select(h => new ChatHistoryItem(h.Role, h.Content)).ToList() ?? new List<ChatHistoryItem>(),
+            UserId: userId,
+            ForceHuman: true);
+
+        try
+        {
+            var result = await _mediator.Send(command, ct);
+            return Ok(Result<ProcessChatResponseDto>.Success(ProcessChatResponseDto.From(result)));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "RequestHuman failed for session {Session}", request.SessionId);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 Result<ProcessChatResponseDto>.Failure("Đã xảy ra lỗi xử lý. Vui lòng thử lại sau."));
         }

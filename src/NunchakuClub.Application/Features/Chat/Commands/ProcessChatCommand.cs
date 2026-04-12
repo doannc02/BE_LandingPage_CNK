@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -17,7 +18,8 @@ public record ProcessChatCommand(
     string SessionId,
     string UserMessage,
     IReadOnlyList<ChatHistoryItem> History,
-    string? UserId = null
+    string? UserId = null,
+    bool ForceHuman = false
 ) : IRequest<ProcessChatResult>;
 
 // ── Result ────────────────────────────────────────────────────────────────────
@@ -74,36 +76,61 @@ public sealed class ProcessChatHandler : IRequestHandler<ProcessChatCommand, Pro
 
     public async Task<ProcessChatResult> Handle(ProcessChatCommand request, CancellationToken ct)
     {
-        // 1. RAG + confidence scoring (single Gemini call)
-        var decision = await _classifier.ClassifyAsync(request.UserMessage, request.History, ct);
-
-        _logger.LogInformation(
-            "Chat classify: Session={Session} Confidence={Conf:F2} NeedsHuman={Human} Category={Cat}",
-            request.SessionId, decision.Confidence, decision.NeedsHuman, decision.Category);
-
-        // 2. AI is confident enough → lưu lịch sử, trả về answer
-        if (!decision.NeedsHuman && decision.Confidence >= ConfidenceThreshold)
+        if (!request.ForceHuman)
         {
-            var session = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
-            AddUserMessage(session, request.UserMessage);
-            AddBotMessage(session, decision.Answer);
-            await SaveWithRetryAsync(ct);
+            // 1. RAG + confidence scoring (single Gemini call)
+            var decision = await _classifier.ClassifyAsync(request.UserMessage, request.History, ct);
 
-            return new ProcessChatResult(ChatResponseType.AI, decision.Answer, null, null);
+            _logger.LogInformation(
+                "Chat classify: Session={Session} Confidence={Conf:F2} NeedsHuman={Human} Category={Cat}",
+                request.SessionId, decision.Confidence, decision.NeedsHuman, decision.Category);
+
+            // 2. AI is confident enough → lưu lịch sử, trả về answer
+            if (!decision.NeedsHuman && decision.Confidence >= ConfidenceThreshold)
+            {
+                var session = await GetOrCreateSessionAsync(request.SessionId, request.UserId, ct);
+                AddUserMessage(session, request.UserMessage);
+                AddBotMessage(session, decision.Answer);
+                await SaveWithRetryAsync(ct);
+
+                return new ProcessChatResult(ChatResponseType.AI, decision.Answer, null, null);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("Force human routing for session {Session}", request.SessionId);
         }
 
-        // 3. Fallback: check for online admin
-        var onlineAdmin = await _presence.GetFirstOnlineAdminAsync(ct);
+        // ─────────────────────────────────────────────────────────────────────
+        // 3. Fallback: Least-Loaded — chọn admin online có ít chat "open" nhất
+        //    Bước 3a: Lấy danh sách tất cả admin đang online từ Firebase Presence
+        //    Bước 3b: Truy vấn workload (số chat "open") từ Firebase RTDB
+        //    Bước 3c: Sắp xếp tăng dần theo workload → chọn admin rảnh nhất
+        // ─────────────────────────────────────────────────────────────────────
+        var onlineAdmins = await _presence.GetOnlineAdminsAsync(ct);
 
-        if (onlineAdmin is not null)
+        if (onlineAdmins.Count > 0)
         {
+            // Query Firebase RTDB: đếm số chat room "open" cho mỗi admin
+            var workloads = await _firebaseChat.GetAdminWorkloadsAsync(ct);
+
+            // Admin nào chưa xuất hiện trong workloads → count = 0 (chưa xử lý chat nào)
+            // OrderBy ascending → admin rảnh nhất lên đầu
+            var selectedAdmin = onlineAdmins
+                .OrderBy(a => workloads.GetValueOrDefault(a.AdminId, 0))
+                .First();
+
+            var selectedWorkload = workloads.GetValueOrDefault(selectedAdmin.AdminId, 0);
+
             _logger.LogInformation(
-                "Admin {AdminId} online — creating Firebase chat room for session {Session}",
-                onlineAdmin.AdminId, request.SessionId);
+                "Least-Loaded routing: Admin {AdminId} selected (current workload={Workload}, " +
+                "total online admins={OnlineCount}) — creating chat room for session {Session}",
+                selectedAdmin.AdminId, selectedWorkload,
+                onlineAdmins.Count, request.SessionId);
 
             var chatRoomId = await _firebaseChat.CreateChatRoomAsync(
                 request.SessionId,
-                onlineAdmin.AdminId,
+                selectedAdmin.AdminId,
                 request.UserMessage,
                 ct);
 
