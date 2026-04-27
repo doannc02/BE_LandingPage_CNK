@@ -19,8 +19,13 @@ public interface IApplicationDbContext
     DbSet<CourseEnrollment> CourseEnrollments { get; }
     DbSet<Coach> Coaches { get; }
     DbSet<Achievement> Achievements { get; }
+    DbSet<Branch> Branches { get; }
+    DbSet<BeltRank> BeltRanks { get; }
     DbSet<Comment> Comments { get; }
     DbSet<ContactSubmission> ContactSubmissions { get; }
+    DbSet<StudentProfile> StudentProfiles { get; }
+    DbSet<AttendanceSession> AttendanceSessions { get; }
+    DbSet<AttendanceRecord> AttendanceRecords { get; }
     DbSet<Media> MediaFiles { get; }
     DbSet<Setting> Settings { get; }
     DbSet<ActivityLog> ActivityLogs { get; }
