@@ -24,8 +24,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<CourseEnrollment> CourseEnrollments => Set<CourseEnrollment>();
     public DbSet<Coach> Coaches => Set<Coach>();
     public DbSet<Achievement> Achievements => Set<Achievement>();
+    public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<BeltRank> BeltRanks => Set<BeltRank>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<ContactSubmission> ContactSubmissions => Set<ContactSubmission>();
+    public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
+    public DbSet<AttendanceSession> AttendanceSessions => Set<AttendanceSession>();
+    public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<Media> MediaFiles => Set<Media>();
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
