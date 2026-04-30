@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NunchakuClub.Infrastructure.Data.Contexts;
@@ -12,9 +13,11 @@ using Pgvector;
 namespace NunchakuClub.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427042922_AddStudentManagementAndAttendance")]
+    partial class AddStudentManagementAndAttendance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -239,64 +242,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.ToTable("attendance_sessions", (string)null);
                 });
 
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.BeltHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid?>("FromBeltRankId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("from_belt_rank_id");
-
-                    b.Property<string>("InstructorNote")
-                        .HasColumnType("text")
-                        .HasColumnName("instructor_note");
-
-                    b.Property<string>("MediaUrl")
-                        .HasColumnType("text")
-                        .HasColumnName("media_url");
-
-                    b.Property<DateTime>("PromotionDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("promotion_date");
-
-                    b.Property<Guid?>("RecordedByUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("recorded_by_user_id");
-
-                    b.Property<Guid>("StudentProfileId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("student_profile_id");
-
-                    b.Property<Guid>("ToBeltRankId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("to_belt_rank_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_belt_history");
-
-                    b.HasIndex("FromBeltRankId")
-                        .HasDatabaseName("ix_belt_history_from_belt_rank_id");
-
-                    b.HasIndex("StudentProfileId")
-                        .HasDatabaseName("ix_belt_history_student_profile_id");
-
-                    b.HasIndex("ToBeltRankId")
-                        .HasDatabaseName("ix_belt_history_to_belt_rank_id");
-
-                    b.ToTable("belt_history", (string)null);
-                });
-
             modelBuilder.Entity("NunchakuClub.Domain.Entities.BeltRank", b =>
                 {
                     b.Property<Guid>("Id")
@@ -377,51 +322,15 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Fee")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("fee");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
-
-                    b.Property<bool>("IsFree")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_free");
-
-                    b.Property<decimal?>("Latitude")
-                        .HasColumnType("numeric(10,7)")
-                        .HasColumnName("latitude");
-
-                    b.Property<decimal?>("Longitude")
-                        .HasColumnType("numeric(10,7)")
-                        .HasColumnName("longitude");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
-
-                    b.Property<string>("Schedule")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("schedule");
-
-                    b.Property<string>("ShortName")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("short_name");
-
-                    b.Property<string>("Thumbnail")
-                        .HasColumnType("text")
-                        .HasColumnName("thumbnail");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -435,98 +344,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasDatabaseName("ix_branches_code");
 
                     b.ToTable("branches", (string)null);
-                });
-
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.BranchCoach", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("BranchId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("branch_id");
-
-                    b.Property<Guid>("CoachId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("coach_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("title");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_branch_coach");
-
-                    b.HasIndex("BranchId")
-                        .HasDatabaseName("ix_branch_coach_branch_id");
-
-                    b.HasIndex("CoachId")
-                        .HasDatabaseName("ix_branch_coach_coach_id");
-
-                    b.ToTable("branch_coach", (string)null);
-                });
-
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.BranchGallery", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("BranchId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("branch_id");
-
-                    b.Property<string>("Caption")
-                        .HasColumnType("text")
-                        .HasColumnName("caption");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("display_order");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.Property<string>("MediaType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("media_type");
-
-                    b.Property<string>("MediaUrl")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("media_url");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_branch_gallery");
-
-                    b.HasIndex("BranchId")
-                        .HasDatabaseName("ix_branch_gallery_branch_id");
-
-                    b.ToTable("branch_gallery", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Category", b =>
@@ -701,8 +518,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("specialization");
 
-                    b.Property<int>("Title")
-                        .HasColumnType("integer")
+                    b.Property<string>("Title")
+                        .HasColumnType("text")
                         .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1669,10 +1486,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("text")
-                        .HasColumnName("address");
-
                     b.Property<Guid>("BranchId")
                         .HasColumnType("uuid")
                         .HasColumnName("branch_id");
@@ -1695,10 +1508,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_of_birth");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("integer")
-                        .HasColumnName("gender");
-
                     b.Property<string>("GuardianName")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -1708,10 +1517,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("guardian_phone");
-
-                    b.Property<decimal?>("HeightCm")
-                        .HasColumnType("numeric")
-                        .HasColumnName("height_cm");
 
                     b.Property<DateTime>("JoinDate")
                         .HasColumnType("timestamp with time zone")
@@ -1741,10 +1546,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
-
-                    b.Property<decimal?>("WeightKg")
-                        .HasColumnType("numeric")
-                        .HasColumnName("weight_kg");
 
                     b.HasKey("Id")
                         .HasName("pk_student_profiles");
@@ -1969,68 +1770,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.Navigation("RecordedByUser");
                 });
 
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.BeltHistory", b =>
-                {
-                    b.HasOne("NunchakuClub.Domain.Entities.BeltRank", "FromBeltRank")
-                        .WithMany()
-                        .HasForeignKey("FromBeltRankId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("fk_belt_history_belt_ranks_from_belt_rank_id");
-
-                    b.HasOne("NunchakuClub.Domain.Entities.StudentProfile", "StudentProfile")
-                        .WithMany("BeltHistories")
-                        .HasForeignKey("StudentProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_belt_history_student_profiles_student_profile_id");
-
-                    b.HasOne("NunchakuClub.Domain.Entities.BeltRank", "ToBeltRank")
-                        .WithMany()
-                        .HasForeignKey("ToBeltRankId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_belt_history_belt_ranks_to_belt_rank_id");
-
-                    b.Navigation("FromBeltRank");
-
-                    b.Navigation("StudentProfile");
-
-                    b.Navigation("ToBeltRank");
-                });
-
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.BranchCoach", b =>
-                {
-                    b.HasOne("NunchakuClub.Domain.Entities.Branch", "Branch")
-                        .WithMany("BranchCoaches")
-                        .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_branch_coach_branches_branch_id");
-
-                    b.HasOne("NunchakuClub.Domain.Entities.Coach", "Coach")
-                        .WithMany("BranchCoaches")
-                        .HasForeignKey("CoachId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_branch_coach_coaches_coach_id");
-
-                    b.Navigation("Branch");
-
-                    b.Navigation("Coach");
-                });
-
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.BranchGallery", b =>
-                {
-                    b.HasOne("NunchakuClub.Domain.Entities.Branch", "Branch")
-                        .WithMany("BranchGalleries")
-                        .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_branch_gallery_branches_branch_id");
-
-                    b.Navigation("Branch");
-                });
-
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Category", b =>
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Category", "Parent")
@@ -2253,10 +1992,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.Navigation("AttendanceSessions");
 
-                    b.Navigation("BranchCoaches");
-
-                    b.Navigation("BranchGalleries");
-
                     b.Navigation("StudentProfiles");
                 });
 
@@ -2274,8 +2009,6 @@ namespace NunchakuClub.Infrastructure.Migrations
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Coach", b =>
                 {
-                    b.Navigation("BranchCoaches");
-
                     b.Navigation("CoachAchievements");
                 });
 
@@ -2311,8 +2044,6 @@ namespace NunchakuClub.Infrastructure.Migrations
             modelBuilder.Entity("NunchakuClub.Domain.Entities.StudentProfile", b =>
                 {
                     b.Navigation("AttendanceRecords");
-
-                    b.Navigation("BeltHistories");
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Tag", b =>
