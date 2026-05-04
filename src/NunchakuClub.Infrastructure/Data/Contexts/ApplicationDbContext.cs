@@ -24,8 +24,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<CourseEnrollment> CourseEnrollments => Set<CourseEnrollment>();
     public DbSet<Coach> Coaches => Set<Coach>();
     public DbSet<Achievement> Achievements => Set<Achievement>();
+    public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<BeltRank> BeltRanks => Set<BeltRank>();
+    public DbSet<BranchCoach> BranchCoaches => Set<BranchCoach>();
+    public DbSet<BranchGallery> BranchGalleries => Set<BranchGallery>();
+    public DbSet<BeltHistory> BeltHistories => Set<BeltHistory>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<ContactSubmission> ContactSubmissions => Set<ContactSubmission>();
+    public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
+    public DbSet<AttendanceSession> AttendanceSessions => Set<AttendanceSession>();
+    public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<Media> MediaFiles => Set<Media>();
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
@@ -33,6 +41,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PendingUserMessage> PendingUserMessages => Set<PendingUserMessage>();
     public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
     public DbSet<ConversationMessage> ConversationMessages => Set<ConversationMessage>();
+    public DbSet<InventoryCategory> InventoryCategories => Set<InventoryCategory>();
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+    public DbSet<BranchInventory> BranchInventories => Set<BranchInventory>();
+    public DbSet<BranchStats> BranchStatsView => Set<BranchStats>();
     public DbSet<UserFcmToken> UserFcmTokens => Set<UserFcmToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
