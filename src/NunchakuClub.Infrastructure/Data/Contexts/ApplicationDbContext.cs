@@ -45,6 +45,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
     public DbSet<BranchInventory> BranchInventories => Set<BranchInventory>();
     public DbSet<BranchStats> BranchStatsView => Set<BranchStats>();
+    public DbSet<UserFcmToken> UserFcmTokens => Set<UserFcmToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

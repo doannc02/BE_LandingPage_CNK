@@ -40,6 +40,7 @@ public interface IApplicationDbContext
     DbSet<InventoryItem> InventoryItems { get; }
     DbSet<BranchInventory> BranchInventories { get; }
     DbSet<BranchStats> BranchStatsView { get; }
+    DbSet<UserFcmToken> UserFcmTokens { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
