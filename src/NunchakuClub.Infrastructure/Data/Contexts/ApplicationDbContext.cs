@@ -41,6 +41,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PendingUserMessage> PendingUserMessages => Set<PendingUserMessage>();
     public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
     public DbSet<ConversationMessage> ConversationMessages => Set<ConversationMessage>();
+    public DbSet<InventoryCategory> InventoryCategories => Set<InventoryCategory>();
+    public DbSet<InventoryItem> InventoryItems => Set<InventoryItem>();
+    public DbSet<BranchInventory> BranchInventories => Set<BranchInventory>();
+    public DbSet<BranchStats> BranchStatsView => Set<BranchStats>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

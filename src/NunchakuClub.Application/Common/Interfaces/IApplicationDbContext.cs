@@ -36,6 +36,10 @@ public interface IApplicationDbContext
     DbSet<PendingUserMessage> PendingUserMessages { get; }
     DbSet<ChatSession> ChatSessions { get; }
     DbSet<ConversationMessage> ConversationMessages { get; }
+    DbSet<InventoryCategory> InventoryCategories { get; }
+    DbSet<InventoryItem> InventoryItems { get; }
+    DbSet<BranchInventory> BranchInventories { get; }
+    DbSet<BranchStats> BranchStatsView { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

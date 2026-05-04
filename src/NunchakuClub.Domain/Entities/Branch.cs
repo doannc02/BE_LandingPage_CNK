@@ -23,4 +23,5 @@ public class Branch : BaseEntity
     public ICollection<AttendanceSession> AttendanceSessions { get; set; } = new List<AttendanceSession>();
     public ICollection<BranchGallery> BranchGalleries { get; set; } = new List<BranchGallery>();
     public ICollection<BranchCoach> BranchCoaches { get; set; } = new List<BranchCoach>();
+    public ICollection<BranchInventory> BranchInventories { get; set; } = new List<BranchInventory>();
 }
