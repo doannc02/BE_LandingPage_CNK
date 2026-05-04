@@ -33,6 +33,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PendingUserMessage> PendingUserMessages => Set<PendingUserMessage>();
     public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
     public DbSet<ConversationMessage> ConversationMessages => Set<ConversationMessage>();
+    public DbSet<UserFcmToken> UserFcmTokens => Set<UserFcmToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

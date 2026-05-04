@@ -55,8 +55,8 @@ public sealed class AdminChatController : ControllerBase
     /// POST /api/admin/fcm-token
     ///
     /// Admin gửi FCM device token sau khi đăng nhập + browser grant notification permission.
-    /// Token được lưu vào PostgreSQL (users.fcm_token) để dùng làm fallback notification
-    /// khi Firebase presence không có token (admin offline).
+    /// Token được lưu vào bảng user_fcm_tokens (một user có thể có nhiều token — nhiều thiết bị).
+    /// Nếu token đã tồn tại cho user này, bỏ qua (không tạo bản ghi trùng).
     /// Gọi mỗi lần: đăng nhập, hoặc FCM token bị refresh.
     /// </summary>
     [HttpPost("fcm-token")]
@@ -70,12 +70,22 @@ public sealed class AdminChatController : ControllerBase
         if (!Guid.TryParse(AdminId, out var adminGuid))
             return Unauthorized(Result<bool>.Failure("Không xác định được admin ID."));
 
-        var user = await _db.Users.FindAsync([adminGuid], ct);
-        if (user is null)
-            return NotFound(Result<bool>.Failure("Không tìm thấy tài khoản."));
+        var token = dto.Token.Trim();
 
-        user.FcmToken = dto.Token.Trim();
-        await _db.SaveChangesAsync(ct);
+        // Kiểm tra token đã tồn tại chưa để tránh trùng lặp
+        var exists = await _db.UserFcmTokens
+            .AnyAsync(t => t.UserId == adminGuid && t.Token == token, ct);
+
+        if (!exists)
+        {
+            _db.UserFcmTokens.Add(new NunchakuClub.Domain.Entities.UserFcmToken
+            {
+                UserId = adminGuid,
+                Token = token,
+                CreatedAt = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync(ct);
+        }
 
         return Ok(Result<bool>.Success(true));
     }
