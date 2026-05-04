@@ -130,10 +130,10 @@ public sealed class FcmNotificationService : IFcmNotificationService
             await using var scope = _scopeFactory.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
 
-            return await db.Users
-                .Where(u => u.FcmToken != null
-                         && (u.Role == UserRole.SuperAdmin || u.Role == UserRole.SubAdmin))
-                .Select(u => u.FcmToken!)
+            // Lấy tất cả token của mọi admin trên mọi thiết bị (multi-device support)
+            return await db.UserFcmTokens
+                .Where(t => t.User.Role == UserRole.SuperAdmin || t.User.Role == UserRole.SubAdmin)
+                .Select(t => t.Token)
                 .Distinct()
                 .ToListAsync(ct);
         }

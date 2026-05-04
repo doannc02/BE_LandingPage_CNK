@@ -18,12 +18,6 @@ public class User : AuditableEntity
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
 
-    /// <summary>
-    /// FCM device token cho push notification (web/mobile).
-    /// Cập nhật qua POST /api/admin/fcm-token khi admin đăng nhập.
-    /// Dùng làm fallback khi token không có trong Firebase presence.
-    /// </summary>
-    public string? FcmToken { get; set; }
 
     /// <summary>
     /// Firebase UID — được set khi người dùng đăng nhập qua SSO (Google/Email Firebase).
@@ -34,4 +28,9 @@ public class User : AuditableEntity
     public ICollection<Post> Posts { get; set; } = new List<Post>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
+
+    /// <summary>
+    /// Tất cả FCM device tokens của user này (nhiều thiết bị / trình duyệt).
+    /// </summary>
+    public ICollection<UserFcmToken> FcmTokens { get; set; } = new List<UserFcmToken>();
 }
