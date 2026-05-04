@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace NunchakuClub.Domain.Entities;
 
@@ -11,6 +12,6 @@ public class BranchStats
     public string? Thumbnail { get; set; }
     public bool IsActive { get; set; }
     public int ActiveStudentCount { get; set; }
-    public int HeadCoachCount { get; set; }
-    public int AssistantCoachCount { get; set; }
+    public List<Guid> HeadCoachIds { get; set; } = new();
+    public List<Guid> AssistantCoachIds { get; set; } = new();
 }

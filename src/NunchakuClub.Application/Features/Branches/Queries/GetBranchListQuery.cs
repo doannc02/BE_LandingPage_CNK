@@ -41,20 +41,6 @@ public class GetBranchListQueryHandler : IRequestHandler<GetBranchListQuery, Res
             .Where(x => branchIds.Contains(x.Id))
             .ToDictionaryAsync(x => x.Id, cancellationToken);
 
-        var branchCoaches = await _context.BranchCoaches
-            .Where(x => branchIds.Contains(x.BranchId))
-            .ToListAsync(cancellationToken);
-
-        var headCoachIdsByBranch = branchCoaches
-            .Where(x => x.Title == NunchakuClub.Domain.Entities.CoachTitle.HeadCoach)
-            .GroupBy(x => x.BranchId)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.CoachId).ToList());
-
-        var assistantCoachIdsByBranch = branchCoaches
-            .Where(x => x.Title == NunchakuClub.Domain.Entities.CoachTitle.AssistantCoach)
-            .GroupBy(x => x.BranchId)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.CoachId).ToList());
-
         var result = stats.Select(s => 
         {
             var b = branches[s.Id];
@@ -75,8 +61,8 @@ public class GetBranchListQueryHandler : IRequestHandler<GetBranchListQuery, Res
                 Description = b.Description,
                 IsActive = b.IsActive,
                 ActiveStudentCount = s.ActiveStudentCount,
-                HeadCoachIds = headCoachIdsByBranch.GetValueOrDefault(s.Id, new List<Guid>()),
-                AssistantCoachIds = assistantCoachIdsByBranch.GetValueOrDefault(s.Id, new List<Guid>())
+                HeadCoachIds = s.HeadCoachIds ?? new List<Guid>(),
+                AssistantCoachIds = s.AssistantCoachIds ?? new List<Guid>()
             };
         }).ToList();
 
