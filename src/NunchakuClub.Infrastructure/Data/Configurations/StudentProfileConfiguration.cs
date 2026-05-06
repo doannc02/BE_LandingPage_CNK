@@ -17,10 +17,17 @@ public class StudentProfileConfiguration : IEntityTypeConfiguration<StudentProfi
             .HasMaxLength(50);
 
         builder.HasIndex(x => x.StudentCode)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"is_deleted\" = false");
 
         builder.HasIndex(x => x.UserId)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"is_deleted\" = false");
+
+        builder.Property(x => x.IsDeleted)
+            .HasDefaultValue(false);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder.Property(x => x.LearningStatus)
             .HasConversion<string>()

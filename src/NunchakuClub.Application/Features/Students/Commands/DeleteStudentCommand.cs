@@ -27,7 +27,7 @@ public class DeleteStudentCommandHandler : IRequestHandler<DeleteStudentCommand,
         if (student == null)
             return Result<bool>.Failure("Student profile not found.");
 
-        _context.StudentProfiles.Remove(student);
+        student.IsDeleted = true;
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result<bool>.Success(true);

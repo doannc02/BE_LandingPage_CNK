@@ -6,6 +6,7 @@ using NunchakuClub.Application.Features.Students.DTOs;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace NunchakuClub.Application.Features.Students.Queries;
 
@@ -26,6 +27,7 @@ public class GetStudentByIdQueryHandler : IRequestHandler<GetStudentByIdQuery, R
             .Include(x => x.User)
             .Include(x => x.Branch)
             .Include(x => x.CurrentBeltRank)
+            .Where(x => !x.IsDeleted)
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
         if (student == null)

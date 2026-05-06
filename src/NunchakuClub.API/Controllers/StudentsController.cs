@@ -22,14 +22,16 @@ public class StudentsController : ControllerBase
 
     // GET: api/students?branchId=guid
     [HttpGet]
-    public async Task<IActionResult> GetStudents([FromQuery] Guid? branchId = null)
+    [Authorize(Policy = "RequireAdminArea")]
+    public async Task<IActionResult> GetStudents([FromQuery] GetStudentsQuery query)
     {
-        var result = await _mediator.Send(new GetStudentsQuery(branchId));
+        var result = await _mediator.Send(query);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     // GET: api/students/{id}
     [HttpGet("{id:guid}")]
+    [Authorize]
     public async Task<IActionResult> GetStudentById(Guid id)
     {
         var result = await _mediator.Send(new GetStudentByIdQuery(id));

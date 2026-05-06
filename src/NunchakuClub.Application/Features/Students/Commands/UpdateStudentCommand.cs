@@ -30,8 +30,15 @@ public class UpdateStudentCommandHandler : IRequestHandler<UpdateStudentCommand,
             return Result<bool>.Failure("Student profile not found.");
 
         var dto = request.Dto;
+        var trimmedStudentCode = dto.StudentCode.Trim();
 
-        student.StudentCode = dto.StudentCode.Trim();
+        var codeExists = await _context.StudentProfiles
+            .AnyAsync(x => x.Id != request.Id && x.StudentCode == trimmedStudentCode, cancellationToken);
+
+        if (codeExists)
+            return Result<bool>.Failure("Student code already exists.");
+
+        student.StudentCode = trimmedStudentCode;
         student.BranchId = dto.BranchId;
         student.CurrentBeltRankId = dto.CurrentBeltRankId;
         student.Address = dto.Address?.Trim();

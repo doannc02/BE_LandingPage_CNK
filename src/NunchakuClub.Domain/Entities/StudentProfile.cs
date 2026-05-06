@@ -29,6 +29,7 @@ public class StudentProfile : BaseEntity
     public string? GuardianName { get; set; }
     public string? GuardianPhone { get; set; }
     public string? Notes { get; set; }
+    public bool IsDeleted { get; set; }
 
     public ICollection<AttendanceRecord> AttendanceRecords { get; set; } = new List<AttendanceRecord>();
     public ICollection<BeltHistory> BeltHistories { get; set; } = new List<BeltHistory>();
