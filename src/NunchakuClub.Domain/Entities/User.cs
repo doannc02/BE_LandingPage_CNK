@@ -28,6 +28,8 @@ public class User : AuditableEntity
     public ICollection<Post> Posts { get; set; } = new List<Post>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
+    public StudentProfile? StudentProfile { get; set; }
+    public ICollection<AttendanceSession> RecordedAttendanceSessions { get; set; } = new List<AttendanceSession>();
 
     /// <summary>
     /// Tất cả FCM device tokens của user này (nhiều thiết bị / trình duyệt).
