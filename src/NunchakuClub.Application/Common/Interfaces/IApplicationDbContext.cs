@@ -36,6 +36,7 @@ public interface IApplicationDbContext
     DbSet<PendingUserMessage> PendingUserMessages { get; }
     DbSet<ChatSession> ChatSessions { get; }
     DbSet<ConversationMessage> ConversationMessages { get; }
+    DbSet<UserFcmToken> UserFcmTokens { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
