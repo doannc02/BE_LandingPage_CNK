@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NunchakuClub.Infrastructure.Data.Contexts;
@@ -12,9 +13,11 @@ using Pgvector;
 namespace NunchakuClub.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506162045_AddSoftDeleteToStudentProfiles")]
+    partial class AddSoftDeleteToStudentProfiles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1714,10 +1717,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("height_cm");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasColumnName("is_deleted")
-                        .HasDefaultValue(false);
+                        .HasColumnName("is_deleted");
 
                     b.Property<DateTime>("JoinDate")
                         .HasColumnType("timestamp with time zone")
@@ -1760,18 +1761,14 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasIndex("StudentCode")
                         .IsUnique()
-                        .HasFilter("\"is_deleted\" = false")
                         .HasDatabaseName("ix_student_profiles_student_code");
 
                     b.HasIndex("UserId")
                         .IsUnique()
-                        .HasFilter("\"is_deleted\" = false")
                         .HasDatabaseName("ix_student_profiles_user_id");
 
                     b.HasIndex("BranchId", "LearningStatus")
                         .HasDatabaseName("ix_student_profiles_branch_id_learning_status");
-
-                    b.HasQueryFilter((NunchakuClub.Domain.Entities.StudentProfile e) => !(e.IsDeleted));
 
                     b.ToTable("student_profiles", (string)null);
                 });

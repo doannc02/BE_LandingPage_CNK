@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NunchakuClub.Infrastructure.Data.Contexts;
@@ -12,9 +13,11 @@ using Pgvector;
 namespace NunchakuClub.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260430114733_UpdateStudentProfile")]
+    partial class UpdateStudentProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -419,10 +422,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("short_name");
 
-                    b.Property<string>("Thumbnail")
-                        .HasColumnType("text")
-                        .HasColumnName("thumbnail");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -456,10 +455,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                    b.Property<int>("Title")
+                        .HasColumnType("integer")
                         .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -505,10 +502,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
-                    b.Property<string>("MediaType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                    b.Property<int>("MediaType")
+                        .HasColumnType("integer")
                         .HasColumnName("media_type");
 
                     b.Property<string>("MediaUrl")
@@ -1713,12 +1708,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("numeric")
                         .HasColumnName("height_cm");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted")
-                        .HasDefaultValue(false);
-
                     b.Property<DateTime>("JoinDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("join_date");
@@ -1760,18 +1749,14 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasIndex("StudentCode")
                         .IsUnique()
-                        .HasFilter("\"is_deleted\" = false")
                         .HasDatabaseName("ix_student_profiles_student_code");
 
                     b.HasIndex("UserId")
                         .IsUnique()
-                        .HasFilter("\"is_deleted\" = false")
                         .HasDatabaseName("ix_student_profiles_user_id");
 
                     b.HasIndex("BranchId", "LearningStatus")
                         .HasDatabaseName("ix_student_profiles_branch_id_learning_status");
-
-                    b.HasQueryFilter((NunchakuClub.Domain.Entities.StudentProfile e) => !(e.IsDeleted));
 
                     b.ToTable("student_profiles", (string)null);
                 });
@@ -1835,6 +1820,11 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.Property<bool>("EmailVerified")
                         .HasColumnType("boolean")
                         .HasColumnName("email_verified");
+
+                    b.Property<string>("FcmToken")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("fcm_token");
 
                     b.Property<string>("FirebaseUid")
                         .HasMaxLength(128)
@@ -1913,40 +1903,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.UserFcmToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now() AT TIME ZONE 'utc'");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("token");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_user_fcm_tokens");
-
-                    b.HasIndex("UserId", "Token")
-                        .IsUnique()
-                        .HasDatabaseName("ix_user_fcm_tokens_user_id_token");
-
-                    b.ToTable("user_fcm_tokens", (string)null);
-                });
-
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Achievement", b =>
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.Coach", "Coach")
@@ -2013,7 +1969,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.BeltRank", "FromBeltRank")
                         .WithMany()
                         .HasForeignKey("FromBeltRankId")
-                        .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("fk_belt_history_belt_ranks_from_belt_rank_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.StudentProfile", "StudentProfile")
@@ -2278,18 +2233,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.UserFcmToken", b =>
-                {
-                    b.HasOne("NunchakuClub.Domain.Entities.User", "User")
-                        .WithMany("FcmTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_fcm_tokens_users_user_id");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("NunchakuClub.Domain.Entities.AttendanceSession", b =>
                 {
                     b.Navigation("Records");
@@ -2376,8 +2319,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.Navigation("ActivityLogs");
 
                     b.Navigation("Comments");
-
-                    b.Navigation("FcmTokens");
 
                     b.Navigation("Posts");
 
