@@ -31,6 +31,7 @@ public class User : AuditableEntity
     public StudentProfile? StudentProfile { get; set; }
     public ICollection<AttendanceSession> RecordedAttendanceSessions { get; set; } = new List<AttendanceSession>();
 
+
     /// <summary>
     /// Tất cả FCM device tokens của user này (nhiều thiết bị / trình duyệt).
     /// </summary>
