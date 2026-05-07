@@ -1,5 +1,4 @@
 using System;
-using NunchakuClub.Domain.Entities;
 
 namespace NunchakuClub.Application.Features.Coaches.DTOs;
 
@@ -7,7 +6,7 @@ public class CoachDto
 {
     public Guid Id { get; set; }
     public string FullName { get; set; } = string.Empty;
-    public CoachTitle Title { get; set; }
+    public string? Title { get; set; }
     public string? Bio { get; set; }
     public string? Specialization { get; set; }
     public int YearsOfExperience { get; set; }
@@ -21,7 +20,7 @@ public class CoachDto
 public class CreateCoachDto
 {
     public string FullName { get; set; } = string.Empty;
-    public CoachTitle Title { get; set; } = CoachTitle.AssistantCoach;
+    public string? Title { get; set; }
     public string? Bio { get; set; }
     public string? Specialization { get; set; }
     public int YearsOfExperience { get; set; }
@@ -35,7 +34,7 @@ public class CreateCoachDto
 public class UpdateCoachDto
 {
     public string FullName { get; set; } = string.Empty;
-    public CoachTitle Title { get; set; } = CoachTitle.AssistantCoach;
+    public string? Title { get; set; }
     public string? Bio { get; set; }
     public string? Specialization { get; set; }
     public int YearsOfExperience { get; set; }
