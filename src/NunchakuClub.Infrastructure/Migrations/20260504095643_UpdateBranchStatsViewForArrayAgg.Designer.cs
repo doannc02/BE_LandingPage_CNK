@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NunchakuClub.Infrastructure.Data.Contexts;
@@ -13,9 +14,11 @@ using Pgvector;
 namespace NunchakuClub.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504095643_UpdateBranchStatsViewForArrayAgg")]
+    partial class UpdateBranchStatsViewForArrayAgg
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2020,6 +2023,11 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("email_verified");
 
+                    b.Property<string>("FcmToken")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("fcm_token");
+
                     b.Property<string>("FirebaseUid")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
@@ -2095,40 +2103,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasDatabaseName("ix_users_username");
 
                     b.ToTable("users", (string)null);
-                });
-
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.UserFcmToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now() AT TIME ZONE 'utc'");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("token");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_user_fcm_tokens");
-
-                    b.HasIndex("UserId", "Token")
-                        .IsUnique()
-                        .HasDatabaseName("ix_user_fcm_tokens_user_id_token");
-
-                    b.ToTable("user_fcm_tokens", (string)null);
                 });
 
             modelBuilder.Entity("NunchakuClub.Domain.Entities.Achievement", b =>
@@ -2491,14 +2465,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.Navigation("Branch");
 
                     b.Navigation("CurrentBeltRank");
-            modelBuilder.Entity("NunchakuClub.Domain.Entities.UserFcmToken", b =>
-                {
-                    b.HasOne("NunchakuClub.Domain.Entities.User", "User")
-                        .WithMany("FcmTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_fcm_tokens_users_user_id");
 
                     b.Navigation("User");
                 });
@@ -2601,8 +2567,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.Navigation("ActivityLogs");
 
                     b.Navigation("Comments");
-
-                    b.Navigation("FcmTokens");
 
                     b.Navigation("Posts");
 
