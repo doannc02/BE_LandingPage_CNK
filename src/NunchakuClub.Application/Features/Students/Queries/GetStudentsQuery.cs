@@ -39,7 +39,6 @@ public class GetStudentsQueryHandler : IRequestHandler<GetStudentsQuery, Result<
             .Include(x => x.User)
             .Include(x => x.Branch)
             .Include(x => x.CurrentBeltRank)
-            .Where(x => !x.IsDeleted)
             .AsQueryable();
 
         // Filter by BranchId

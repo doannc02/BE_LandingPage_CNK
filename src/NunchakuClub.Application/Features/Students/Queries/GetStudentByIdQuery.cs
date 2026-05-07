@@ -27,7 +27,6 @@ public class GetStudentByIdQueryHandler : IRequestHandler<GetStudentByIdQuery, R
             .Include(x => x.User)
             .Include(x => x.Branch)
             .Include(x => x.CurrentBeltRank)
-            .Where(x => !x.IsDeleted)
             .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
         if (student == null)
