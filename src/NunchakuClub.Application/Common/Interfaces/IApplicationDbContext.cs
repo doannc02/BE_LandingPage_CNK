@@ -39,6 +39,7 @@ public interface IApplicationDbContext
     DbSet<InventoryCategory> InventoryCategories { get; }
     DbSet<InventoryItem> InventoryItems { get; }
     DbSet<BranchInventory> BranchInventories { get; }
+    DbSet<InventoryTransaction> InventoryTransactions { get; }
     DbSet<BranchStats> BranchStatsView { get; }
     DbSet<UserFcmToken> UserFcmTokens { get; }
 

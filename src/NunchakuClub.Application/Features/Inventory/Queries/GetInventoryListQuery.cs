@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Application.Common.Models;
 using NunchakuClub.Application.Features.Inventory.DTOs;
+using NunchakuClub.Application.Common.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +12,15 @@ using System.Threading.Tasks;
 
 namespace NunchakuClub.Application.Features.Inventory.Queries;
 
-public record GetInventoryListQuery(Guid? BranchId = null, Guid? CategoryId = null, string? Status = null) : IRequest<Result<List<BranchInventoryDto>>>;
+public record GetInventoryListQuery(
+    Guid? BranchId = null, 
+    Guid? CategoryId = null, 
+    string? Status = null,
+    int PageNumber = 1,
+    int PageSize = 10
+) : IRequest<Result<PaginatedList<BranchInventoryDto>>>;
 
-public class GetInventoryListQueryHandler : IRequestHandler<GetInventoryListQuery, Result<List<BranchInventoryDto>>>
+public class GetInventoryListQueryHandler : IRequestHandler<GetInventoryListQuery, Result<PaginatedList<BranchInventoryDto>>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -22,7 +29,7 @@ public class GetInventoryListQueryHandler : IRequestHandler<GetInventoryListQuer
         _context = context;
     }
 
-    public async Task<Result<List<BranchInventoryDto>>> Handle(GetInventoryListQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedList<BranchInventoryDto>>> Handle(GetInventoryListQuery request, CancellationToken cancellationToken)
     {
         var query = _context.BranchInventories
             .Include(x => x.Item)
@@ -36,36 +43,42 @@ public class GetInventoryListQueryHandler : IRequestHandler<GetInventoryListQuer
         if (request.CategoryId.HasValue)
             query = query.Where(x => x.Item.CategoryId == request.CategoryId.Value);
 
-        // Fetch to memory if status filtering is required (since Status is computed)
-        var inventories = await query.ToListAsync(cancellationToken);
-
+        // Filter by status at the Database level
         if (!string.IsNullOrEmpty(request.Status))
         {
-            inventories = inventories.Where(x => x.Status.ToString().Equals(request.Status, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (request.Status.Equals("OutOfStock", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(x => x.Quantity <= 0);
+            else if (request.Status.Equals("LowStock", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(x => x.Quantity > 0 && x.Quantity <= x.LowStockThreshold);
+            else if (request.Status.Equals("InStock", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(x => x.Quantity > x.LowStockThreshold);
         }
 
-        var result = inventories.Select(x => new BranchInventoryDto
+        var paginatedResult = await query
+            .OrderBy(x => x.Item.Name)
+            .ToPaginatedListAsync(request.PageNumber, request.PageSize, cancellationToken);
+
+        var dtos = paginatedResult.Items.Select(x => new BranchInventoryDto
         {
             Id = x.Id,
             BranchId = x.BranchId,
             BranchName = x.Branch.Name,
+            ItemId = x.ItemId,
+            ItemName = x.Item.Name,
+            Sku = x.Item.Sku,
+            CategoryName = x.Item.Category?.Name,
             Quantity = x.Quantity,
             LowStockThreshold = x.LowStockThreshold,
             ExportedThisMonth = x.ExportedThisMonth,
-            Status = x.Status.ToString(),
-            Item = new InventoryItemDto
-            {
-                Id = x.Item.Id,
-                Name = x.Item.Name,
-                Sku = x.Item.Sku,
-                Description = x.Item.Description,
-                ImageUrl = x.Item.ImageUrl,
-                CategoryId = x.Item.CategoryId,
-                CategoryName = x.Item.Category?.Name ?? string.Empty,
-                IsActive = x.Item.IsActive
-            }
+            Status = x.Status.ToString()
         }).ToList();
 
-        return Result<List<BranchInventoryDto>>.Success(result);
+        return Result<PaginatedList<BranchInventoryDto>>.Success(new PaginatedList<BranchInventoryDto>
+        {
+            Items = dtos,
+            PageNumber = paginatedResult.PageNumber,
+            PageSize = paginatedResult.PageSize,
+            TotalCount = paginatedResult.TotalCount
+        });
     }
 }

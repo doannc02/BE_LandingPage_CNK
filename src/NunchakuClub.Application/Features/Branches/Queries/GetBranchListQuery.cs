@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Application.Common.Models;
 using NunchakuClub.Application.Features.Branches.DTOs;
+using NunchakuClub.Application.Common.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,9 +12,13 @@ using System.Threading.Tasks;
 
 namespace NunchakuClub.Application.Features.Branches.Queries;
 
-public record GetBranchListQuery(bool? IsActive = null) : IRequest<Result<List<BranchDto>>>;
+public record GetBranchListQuery(
+    bool? IsActive = null,
+    int PageNumber = 1,
+    int PageSize = 10
+) : IRequest<Result<PaginatedList<BranchDto>>>;
 
-public class GetBranchListQueryHandler : IRequestHandler<GetBranchListQuery, Result<List<BranchDto>>>
+public class GetBranchListQueryHandler : IRequestHandler<GetBranchListQuery, Result<PaginatedList<BranchDto>>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -22,26 +27,24 @@ public class GetBranchListQueryHandler : IRequestHandler<GetBranchListQuery, Res
         _context = context;
     }
 
-    public async Task<Result<List<BranchDto>>> Handle(GetBranchListQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PaginatedList<BranchDto>>> Handle(GetBranchListQuery request, CancellationToken cancellationToken)
     {
-        // Use the v_branch_stats view
         var query = _context.BranchStatsView.AsQueryable();
 
         if (request.IsActive.HasValue)
             query = query.Where(x => x.IsActive == request.IsActive.Value);
 
-        var stats = await query.OrderBy(x => x.Name).ToListAsync(cancellationToken);
+        var paginatedStats = await query
+            .OrderBy(x => x.Name)
+            .ToPaginatedListAsync(request.PageNumber, request.PageSize, cancellationToken);
 
-        // Fetch remaining standard fields from Branches if needed, or just return stats if it's enough.
-        // Wait, BranchStats has Code, Name, Address, Thumbnail, IsActive.
-        // We probably need to join with Branches to get all standard fields.
-        var branchIds = stats.Select(x => x.Id).ToList();
+        var branchIds = paginatedStats.Items.Select(x => x.Id).ToList();
         
         var branches = await _context.Branches
             .Where(x => branchIds.Contains(x.Id))
             .ToDictionaryAsync(x => x.Id, cancellationToken);
 
-        var result = stats.Select(s => 
+        var dtos = paginatedStats.Items.Select(s => 
         {
             var b = branches[s.Id];
             return new BranchDto
@@ -66,6 +69,12 @@ public class GetBranchListQueryHandler : IRequestHandler<GetBranchListQuery, Res
             };
         }).ToList();
 
-        return Result<List<BranchDto>>.Success(result);
+        return Result<PaginatedList<BranchDto>>.Success(new PaginatedList<BranchDto>
+        {
+            Items = dtos,
+            PageNumber = paginatedStats.PageNumber,
+            PageSize = paginatedStats.PageSize,
+            TotalCount = paginatedStats.TotalCount
+        });
     }
 }

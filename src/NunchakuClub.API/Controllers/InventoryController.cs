@@ -21,9 +21,11 @@ public class InventoryController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetInventoryList([FromQuery] Guid? branchId, [FromQuery] Guid? categoryId, [FromQuery] string? status)
+    public async Task<IActionResult> GetInventoryList(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var result = await _mediator.Send(new GetInventoryListQuery(branchId, categoryId, status));
+        var result = await _mediator.Send(new GetInventoryListQuery(null, null, null, pageNumber, pageSize));
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
@@ -35,7 +37,7 @@ public class InventoryController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> CreateInventoryItem([FromBody] CreateInventoryItemDto dto)
     {
         var result = await _mediator.Send(new CreateInventoryItemCommand(dto));
@@ -43,7 +45,7 @@ public class InventoryController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> UpdateInventoryItem(Guid id, [FromBody] UpdateInventoryItemDto dto)
     {
         var result = await _mediator.Send(new UpdateInventoryItemCommand(id, dto));
@@ -51,7 +53,7 @@ public class InventoryController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> DeleteInventoryItem(Guid id)
     {
         var result = await _mediator.Send(new DeleteInventoryItemCommand(id));
@@ -59,7 +61,7 @@ public class InventoryController : ControllerBase
     }
 
     [HttpPost("{id:guid}/adjust")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> AdjustStock(Guid id, [FromBody] AdjustStockDto dto)
     {
         var result = await _mediator.Send(new AdjustStockCommand(id, dto));

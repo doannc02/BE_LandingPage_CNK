@@ -32,7 +32,7 @@ public class ContactController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> GetSubmissions([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
     {
         var query = new GetContactSubmissionsQuery(pageNumber, pageSize);

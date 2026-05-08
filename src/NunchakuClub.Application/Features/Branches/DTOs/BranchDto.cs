@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace NunchakuClub.Application.Features.Branches.DTOs;
 
@@ -60,18 +61,41 @@ public class BranchStudentLeaderDto
 
 public class CreateBranchDto
 {
+    [Required]
+    [MaxLength(50)]
     public string Code { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(200)]
     public string Name { get; set; } = string.Empty;
+
+    [MaxLength(100)]
     public string? ShortName { get; set; }
+
+    [MaxLength(500)]
     public string? Address { get; set; }
+
     public string? Thumbnail { get; set; }
+
+    [MaxLength(100)]
     public string? Area { get; set; }
+
+    [Range(-90, 90)]
     public decimal? Latitude { get; set; }
+
+    [Range(-180, 180)]
     public decimal? Longitude { get; set; }
+
+    [MaxLength(500)]
     public string? Schedule { get; set; }
+
+    [MaxLength(200)]
     public string? Fee { get; set; }
+
     public bool IsFree { get; set; }
+
     public string? Description { get; set; }
+
     public bool IsActive { get; set; } = true;
 }
 

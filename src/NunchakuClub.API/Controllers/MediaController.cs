@@ -118,7 +118,7 @@ public class MediaController : ControllerBase
     /// Xóa video bài học khỏi Cloudinary. Chỉ Admin mới có quyền.
     /// </summary>
     [HttpDelete("lesson-video")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> DeleteLessonVideo(
         [FromQuery] string publicId,
         CancellationToken cancellationToken)

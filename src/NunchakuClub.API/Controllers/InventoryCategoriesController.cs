@@ -21,14 +21,17 @@ public class InventoryCategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] bool? isActive)
+    public async Task<IActionResult> Get(
+        [FromQuery] bool? isActive,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var result = await _mediator.Send(new GetInventoryCategoryListQuery(isActive));
+        var result = await _mediator.Send(new GetInventoryCategoryListQuery(isActive, pageNumber, pageSize));
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> Create([FromBody] CreateInventoryCategoryDto dto)
     {
         var result = await _mediator.Send(new CreateInventoryCategoryCommand(dto));
@@ -36,7 +39,7 @@ public class InventoryCategoriesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateInventoryCategoryDto dto)
     {
         var result = await _mediator.Send(new UpdateInventoryCategoryCommand(id, dto));
@@ -44,7 +47,7 @@ public class InventoryCategoriesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _mediator.Send(new DeleteInventoryCategoryCommand(id));

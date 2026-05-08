@@ -178,7 +178,7 @@ public class PostsController : ControllerBase
     /// Delete post (Admin only)
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> DeletePost(Guid id)
     {
         var command = new DeletePostCommand(id);

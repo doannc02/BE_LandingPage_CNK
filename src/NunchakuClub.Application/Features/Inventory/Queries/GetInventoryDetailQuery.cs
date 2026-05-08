@@ -37,21 +37,14 @@ public class GetInventoryDetailQueryHandler : IRequestHandler<GetInventoryDetail
             Id = entity.Id,
             BranchId = entity.BranchId,
             BranchName = entity.Branch.Name,
+            ItemId = entity.ItemId,
+            ItemName = entity.Item.Name,
+            Sku = entity.Item.Sku,
+            CategoryName = entity.Item.Category?.Name,
             Quantity = entity.Quantity,
             LowStockThreshold = entity.LowStockThreshold,
             ExportedThisMonth = entity.ExportedThisMonth,
-            Status = entity.Status.ToString(),
-            Item = new InventoryItemDto
-            {
-                Id = entity.Item.Id,
-                Name = entity.Item.Name,
-                Sku = entity.Item.Sku,
-                Description = entity.Item.Description,
-                ImageUrl = entity.Item.ImageUrl,
-                CategoryId = entity.Item.CategoryId,
-                CategoryName = entity.Item.Category?.Name ?? string.Empty,
-                IsActive = entity.Item.IsActive
-            }
+            Status = entity.Status.ToString()
         };
 
         return Result<BranchInventoryDto>.Success(dto);

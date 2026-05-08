@@ -28,7 +28,7 @@ public class MenuItemsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> CreateMenuItem([FromBody] CreateMenuItemDto dto)
     {
         var command = new CreateMenuItemCommand(dto);

@@ -21,9 +21,12 @@ public class BranchesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetBranches([FromQuery] bool? isActive)
+    public async Task<IActionResult> GetBranches(
+        [FromQuery] bool? isActive, 
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 10)
     {
-        var result = await _mediator.Send(new GetBranchListQuery(isActive));
+        var result = await _mediator.Send(new GetBranchListQuery(isActive, pageNumber, pageSize));
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
@@ -35,7 +38,7 @@ public class BranchesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> CreateBranch([FromBody] CreateBranchDto dto)
     {
         var result = await _mediator.Send(new CreateBranchCommand(dto));
@@ -43,7 +46,7 @@ public class BranchesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> UpdateBranch(Guid id, [FromBody] UpdateBranchDto dto)
     {
         var result = await _mediator.Send(new UpdateBranchCommand(id, dto));
@@ -51,7 +54,7 @@ public class BranchesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> DeleteBranch(Guid id)
     {
         var result = await _mediator.Send(new DeleteBranchCommand(id));
