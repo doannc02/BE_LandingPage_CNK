@@ -8,6 +8,10 @@ public class KnowledgeDocumentConfiguration : IEntityTypeConfiguration<Knowledge
 {
     public void Configure(EntityTypeBuilder<KnowledgeDocument> builder)
     {
+        builder.ToTable("knowledge_documents");
+
+        builder.HasKey(x => x.Id);
+
         builder.Property(x => x.Content).IsRequired();
         builder.Property(x => x.Source).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Title).HasMaxLength(200);

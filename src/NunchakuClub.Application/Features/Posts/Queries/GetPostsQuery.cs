@@ -42,9 +42,10 @@ public class GetPostsQueryHandler : IRequestHandler<GetPostsQuery, Result<Pagina
         // Filters
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(p => 
-                p.Title.Contains(request.SearchTerm) || 
-                p.Content.Contains(request.SearchTerm));
+            var term = request.SearchTerm.ToLower();
+            query = query.Where(p =>
+                p.Title.ToLower().Contains(term) ||
+                p.Content.ToLower().Contains(term));
         }
         
         if (request.CategoryId.HasValue)

@@ -155,6 +155,9 @@ public sealed class ChatController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(Result<ProcessChatResponseDto>.Failure("Dữ liệu đầu vào không hợp lệ."));
 
+        if (string.IsNullOrWhiteSpace(request.SessionId) || request.SessionId.Length > 128)
+            return BadRequest(Result<ProcessChatResponseDto>.Failure("sessionId không hợp lệ (tối đa 128 ký tự)."));
+
         var trimmedMessage = request.Message.Trim();
         if (string.IsNullOrEmpty(trimmedMessage))
             return BadRequest(Result<ProcessChatResponseDto>.Failure("Trường 'message' không được rỗng."));
@@ -201,8 +204,11 @@ public sealed class ChatController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(Result<ProcessChatResponseDto>.Failure("Dữ liệu đầu vào không hợp lệ."));
 
-        var trimmedMessage = string.IsNullOrWhiteSpace(request.Message) 
-                           ? "Tôi muốn gặp nhân viên hỗ trợ." 
+        if (string.IsNullOrWhiteSpace(request.SessionId) || request.SessionId.Length > 128)
+            return BadRequest(Result<ProcessChatResponseDto>.Failure("sessionId không hợp lệ (tối đa 128 ký tự)."));
+
+        var trimmedMessage = string.IsNullOrWhiteSpace(request.Message)
+                           ? "Tôi muốn gặp nhân viên hỗ trợ."
                            : request.Message.Trim();
 
         // Lấy userId từ JWT nếu user đã đăng nhập (null = anonymous)

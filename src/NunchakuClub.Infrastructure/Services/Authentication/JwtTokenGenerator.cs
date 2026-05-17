@@ -81,6 +81,9 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         }
     }
 
+    public DateTime GetAccessTokenExpiresAt() =>
+        DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes);
+
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

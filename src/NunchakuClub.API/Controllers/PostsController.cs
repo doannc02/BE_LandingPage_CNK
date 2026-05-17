@@ -82,9 +82,7 @@ public class PostsController : ControllerBase
         var query = new GetRelatedPostsQuery(slug, limit);
         var result = await _mediator.Send(query);
 
-        return result.IsSuccess
-            ? Ok(new { success = true, data = result.Data })
-            : BadRequest(new { success = false, error = result.Error });
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
     /// <summary>
@@ -96,9 +94,7 @@ public class PostsController : ControllerBase
         var command = new LikePostCommand(id);
         var result = await _mediator.Send(command);
 
-        return result.IsSuccess
-            ? Ok(new { success = true, data = result.Data })
-            : BadRequest(new { success = false, error = result.Error });
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
     /// <summary>
@@ -110,9 +106,7 @@ public class PostsController : ControllerBase
         var query = new GetCommentsQuery(id);
         var result = await _mediator.Send(query);
 
-        return result.IsSuccess
-            ? Ok(new { success = true, data = result.Data })
-            : BadRequest(new { success = false, error = result.Error });
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
     /// <summary>
@@ -130,9 +124,7 @@ public class PostsController : ControllerBase
 
         var result = await _mediator.Send(command);
 
-        return result.IsSuccess
-            ? Ok(new { success = true, data = new { commentId = result.Data } })
-            : BadRequest(new { success = false, error = result.Error });
+        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
     }
 
     public class AddCommentRequest

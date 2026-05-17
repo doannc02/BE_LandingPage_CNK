@@ -27,8 +27,8 @@ public class ContactController : ControllerBase
         
         var command = new CreateContactSubmissionCommand(dto, ipAddress, userAgent);
         var result = await _mediator.Send(command);
-        
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+
+        return result.IsSuccess ? Created("", result.Data) : BadRequest(result.Error);
     }
 
     [HttpGet]

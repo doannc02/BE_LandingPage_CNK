@@ -46,18 +46,18 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         
         var accessToken = _jwtTokenGenerator.GenerateAccessToken(user);
         var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
-        
+
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         user.LastLoginAt = DateTime.UtcNow;
-        
+
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         return Result<AuthResponse>.Success(new AuthResponse
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = _jwtTokenGenerator.GetAccessTokenExpiresAt(),
             User = new UserDto
             {
                 Id = user.Id,
