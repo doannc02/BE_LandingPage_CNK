@@ -14,7 +14,7 @@ namespace NunchakuClub.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/knowledge-base")]
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = "RequireAdminArea")]
 public sealed class KnowledgeBaseController : ControllerBase
 {
     private readonly IKnowledgeBaseService _kb;

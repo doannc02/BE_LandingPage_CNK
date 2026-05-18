@@ -37,7 +37,7 @@ public class CoursesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto dto)
     {
         var command = new CreateCourseCommand(dto);
@@ -46,7 +46,7 @@ public class CoursesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> UpdateCourse(Guid id, [FromBody] UpdateCourseDto dto)
     {
         var command = new UpdateCourseCommand(id, dto);

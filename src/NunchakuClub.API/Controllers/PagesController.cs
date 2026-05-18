@@ -37,7 +37,7 @@ public class PagesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> CreatePage([FromBody] CreatePageDto dto)
     {
         var command = new CreatePageCommand(dto);
@@ -46,7 +46,7 @@ public class PagesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> UpdatePage(Guid id, [FromBody] UpdatePageDto dto)
     {
         var command = new UpdatePageCommand(id, dto);

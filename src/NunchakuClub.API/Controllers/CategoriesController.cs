@@ -29,7 +29,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto dto)
     {
         var command = new CreateCategoryCommand(dto);
@@ -38,7 +38,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryDto dto)
     {
         var command = new UpdateCategoryCommand(id, dto);

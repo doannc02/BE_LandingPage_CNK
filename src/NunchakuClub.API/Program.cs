@@ -309,6 +309,25 @@ using (var seedScope = app.Services.CreateScope())
     {
         Log.Warning(ex, "Knowledge base seed failed — chat will fall back to keyword search");
     }
+
+    // Seed inventory data
+    try
+    {
+        var dbContext = seedScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        // Seed users
+        var passwordHasher = seedScope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        await NunchakuClub.API.Extensions.UserDbSeeder.SeedAdminAsync(dbContext, passwordHasher);
+        Log.Information("Admin user seed check completed");
+
+        // Seed inventory
+        await NunchakuClub.API.Extensions.InventoryDbSeeder.SeedAsync(dbContext);
+        Log.Information("Inventory database seed check completed");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Database seed failed");
+    }
 }
 
 Log.Information("Starting Nunchaku Club API...");

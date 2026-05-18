@@ -28,7 +28,7 @@ public class CourseEnrollmentsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "RequireAdminArea")]
     public async Task<IActionResult> GetEnrollments(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20)
