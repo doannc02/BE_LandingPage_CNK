@@ -1,3 +1,4 @@
+using System;
 using System.Security.Claims;
 using NunchakuClub.Domain.Entities;
 
@@ -9,4 +10,5 @@ public interface IJwtTokenGenerator
     string GenerateRefreshToken();
     bool ValidateToken(string token);
     ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
+    DateTime GetAccessTokenExpiresAt();
 }

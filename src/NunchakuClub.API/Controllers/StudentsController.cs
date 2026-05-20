@@ -5,6 +5,7 @@ using NunchakuClub.Application.Features.Students.Commands;
 using NunchakuClub.Application.Features.Students.DTOs;
 using NunchakuClub.Application.Features.Students.Queries;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace NunchakuClub.API.Controllers;
@@ -20,6 +21,13 @@ public class StudentsController : ControllerBase
         _mediator = mediator;
     }
 
+    private Guid CurrentUserId =>
+        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new UnauthorizedAccessException("Missing nameid claim"));
+
+    private bool IsAdminArea =>
+        User.IsInRole("SuperAdmin") || User.IsInRole("SubAdmin");
+
     // GET: api/students?branchId=guid
     [HttpGet]
     [Authorize(Policy = "RequireAdminArea")]
@@ -34,6 +42,9 @@ public class StudentsController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetStudentById(Guid id)
     {
+        if (!IsAdminArea && id != CurrentUserId)
+            return Forbid();
+
         var result = await _mediator.Send(new GetStudentByIdQuery(id));
         return result.IsSuccess ? Ok(result) : NotFound(result);
     }

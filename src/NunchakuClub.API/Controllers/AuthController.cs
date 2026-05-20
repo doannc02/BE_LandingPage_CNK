@@ -20,15 +20,17 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterCommand command)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        var command = new RegisterCommand(request.Email, request.Username, request.Password, request.FullName);
         var result = await _mediator.Send(command);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginCommand command)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        var command = new LoginCommand(request.Email, request.Password);
         var result = await _mediator.Send(command);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
@@ -66,6 +68,20 @@ public class AuthController : ControllerBase
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
+
+    public class RegisterRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+    }
+
+    public class LoginRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
 
     public class RefreshTokenRequest
     {

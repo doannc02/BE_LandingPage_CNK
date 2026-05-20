@@ -45,7 +45,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
                     b.Property<int>("DisplayOrder")
@@ -53,7 +54,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("display_order");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("image_url");
 
                     b.Property<bool>("IsFeatured")
@@ -61,16 +63,20 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("is_featured");
 
                     b.Property<string>("ParticipantNames")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("participant_names");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("title");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer")
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("type");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -78,14 +84,21 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("updated_at");
 
                     b.Property<string>("VideoUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("video_url");
 
                     b.HasKey("Id")
                         .HasName("pk_achievements");
 
+                    b.HasIndex("AchievementDate")
+                        .HasDatabaseName("ix_achievements_achievement_date");
+
                     b.HasIndex("CoachId")
                         .HasDatabaseName("ix_achievements_coach_id");
+
+                    b.HasIndex("IsFeatured")
+                        .HasDatabaseName("ix_achievements_is_featured");
 
                     b.ToTable("achievements", (string)null);
                 });
@@ -99,7 +112,8 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Action")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("action");
 
                     b.Property<DateTime>("CreatedAt")
@@ -107,7 +121,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("Details")
-                        .HasColumnType("text")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("details");
 
                     b.Property<Guid?>("EntityId")
@@ -116,11 +131,13 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("EntityType")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("entity_type");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("ip_address");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -128,7 +145,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("updated_at");
 
                     b.Property<string>("UserAgent")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("user_agent");
 
                     b.Property<Guid?>("UserId")
@@ -137,6 +155,9 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_activity_logs");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_activity_logs_created_at");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_activity_logs_user_id");
@@ -646,7 +667,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("description");
 
                     b.Property<int>("DisplayOrder")
@@ -659,7 +681,8 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
                     b.Property<Guid?>("ParentId")
@@ -668,7 +691,8 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("slug");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -680,6 +704,10 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasIndex("ParentId")
                         .HasDatabaseName("ix_categories_parent_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_categories_slug");
 
                     b.ToTable("categories", (string)null);
                 });
@@ -758,23 +786,26 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string[]>("Achievements")
-                        .HasColumnType("text[]")
+                        .HasColumnType("jsonb")
                         .HasColumnName("achievements");
 
                     b.Property<string>("AvatarUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("avatar_url");
 
                     b.Property<string>("Bio")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("bio");
 
                     b.Property<string[]>("Certifications")
-                        .HasColumnType("text[]")
+                        .HasColumnType("jsonb")
                         .HasColumnName("certifications");
 
                     b.Property<string>("CoverImageUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("cover_image_url");
 
                     b.Property<DateTime>("CreatedAt")
@@ -786,12 +817,14 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("display_order");
 
                     b.Property<string>("Email")
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("full_name");
 
                     b.Property<bool>("IsActive")
@@ -799,15 +832,19 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<string>("Phone")
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("phone");
 
                     b.Property<string>("Specialization")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("specialization");
 
-                    b.Property<int>("Title")
-                        .HasColumnType("integer")
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -825,6 +862,9 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_coaches");
 
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("ix_coaches_is_active");
+
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_coaches_user_id");
 
@@ -839,16 +879,19 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AuthorEmail")
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("author_email");
 
                     b.Property<string>("AuthorName")
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("author_name");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("content");
 
                     b.Property<DateTime>("CreatedAt")
@@ -863,8 +906,10 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("post_id");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -884,6 +929,9 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasIndex("PostId")
                         .HasDatabaseName("ix_comments_post_id");
 
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_comments_status");
+
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_comments_user_id");
 
@@ -898,7 +946,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AdminNotes")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("admin_notes");
 
                     b.Property<Guid?>("CourseId")
@@ -911,12 +960,14 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("full_name");
 
                     b.Property<DateTime?>("HandledAt")
@@ -928,21 +979,26 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("handled_by");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("ip_address");
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("message");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("phone");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -950,7 +1006,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("updated_at");
 
                     b.Property<string>("UserAgent")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("user_agent");
 
                     b.HasKey("Id")
@@ -958,6 +1015,12 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasIndex("CourseId")
                         .HasDatabaseName("ix_contact_submissions_course_id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_contact_submissions_created_at");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_contact_submissions_status");
 
                     b.ToTable("contact_submissions", (string)null);
                 });
@@ -1024,7 +1087,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("CoverImageUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("cover_image_url");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1032,7 +1096,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
                         .HasColumnName("description");
 
                     b.Property<int>("DisplayOrder")
@@ -1044,7 +1109,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("duration_months");
 
                     b.Property<string[]>("Features")
-                        .HasColumnType("text[]")
+                        .HasColumnType("jsonb")
                         .HasColumnName("features");
 
                     b.Property<bool>("IsActive")
@@ -1059,17 +1124,20 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_free");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("integer")
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("level");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
                         .HasColumnName("name");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric")
+                        .HasColumnType("numeric(18,2)")
                         .HasColumnName("price");
 
                     b.Property<int>("SessionsPerWeek")
@@ -1078,11 +1146,13 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
                         .HasColumnName("slug");
 
                     b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("thumbnail_url");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1091,6 +1161,10 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_courses");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_courses_slug");
 
                     b.ToTable("courses", (string)null);
                 });
@@ -1103,7 +1177,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AdminNotes")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("admin_notes");
 
                     b.Property<Guid>("CourseId")
@@ -1116,7 +1191,8 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<DateTime>("EnrolledAt")
@@ -1125,16 +1201,19 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("full_name");
 
                     b.Property<string>("Message")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("message");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("phone");
 
                     b.Property<DateTime?>("ProcessedAt")
@@ -1145,8 +1224,10 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("processed_by");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1162,6 +1243,9 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasIndex("CourseId")
                         .HasDatabaseName("ix_course_enrollments_course_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_course_enrollments_status");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_course_enrollments_user_id");
@@ -1386,11 +1470,13 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AltText")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("alt_text");
 
                     b.Property<string>("Caption")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("caption");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1398,7 +1484,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
                     b.Property<int?>("Duration")
@@ -1407,7 +1494,8 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("FilePath")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("file_path");
 
                     b.Property<long>("FileSize")
@@ -1416,17 +1504,20 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("FileType")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("file_type");
 
                     b.Property<string>("FileUrl")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("file_url");
 
                     b.Property<string>("Filename")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("filename");
 
                     b.Property<int?>("Height")
@@ -1435,20 +1526,24 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("MimeType")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("mime_type");
 
                     b.Property<string>("OriginalFilename")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("original_filename");
 
                     b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("thumbnail_url");
 
                     b.Property<string>("Title")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1459,10 +1554,6 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("uploaded_by");
 
-                    b.Property<Guid>("UploaderId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("uploader_id");
-
                     b.Property<int?>("Width")
                         .HasColumnType("integer")
                         .HasColumnName("width");
@@ -1470,8 +1561,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_media_files");
 
-                    b.HasIndex("UploaderId")
-                        .HasDatabaseName("ix_media_files_uploader_id");
+                    b.HasIndex("UploadedBy")
+                        .HasDatabaseName("ix_media_files_uploaded_by");
 
                     b.ToTable("media_files", (string)null);
                 });
@@ -1492,7 +1583,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("display_order");
 
                     b.Property<string>("IconClass")
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("icon_class");
 
                     b.Property<bool>("IsActive")
@@ -1501,12 +1593,14 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Label")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("label");
 
                     b.Property<string>("MenuLocation")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("menu_location");
 
                     b.Property<Guid?>("PageId")
@@ -1519,7 +1613,8 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Target")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("target");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1527,11 +1622,15 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("updated_at");
 
                     b.Property<string>("Url")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("url");
 
                     b.HasKey("Id")
                         .HasName("pk_menu_items");
+
+                    b.HasIndex("MenuLocation")
+                        .HasDatabaseName("ix_menu_items_menu_location");
 
                     b.HasIndex("PageId")
                         .HasDatabaseName("ix_menu_items_page_id");
@@ -1550,7 +1649,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("BannerImageUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("banner_image_url");
 
                     b.Property<string>("Content")
@@ -1571,11 +1671,13 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("display_order");
 
                     b.Property<string>("Excerpt")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("excerpt");
 
                     b.Property<string>("FeaturedImageUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("featured_image_url");
 
                     b.Property<bool>("IsPublished")
@@ -1583,11 +1685,13 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("is_published");
 
                     b.Property<string>("MetaDescription")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("meta_description");
 
                     b.Property<string>("MetaTitle")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("meta_title");
 
                     b.Property<Guid?>("ParentId")
@@ -1600,16 +1704,19 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("slug");
 
                     b.Property<string>("Template")
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("template");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1623,8 +1730,15 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_pages");
 
+                    b.HasIndex("IsPublished")
+                        .HasDatabaseName("ix_pages_is_published");
+
                     b.HasIndex("ParentId")
                         .HasDatabaseName("ix_pages_parent_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_pages_slug");
 
                     b.ToTable("pages", (string)null);
                 });
@@ -1838,11 +1952,13 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AltText")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("alt_text");
 
                     b.Property<string>("Caption")
-                        .HasColumnType("text")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("caption");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1855,7 +1971,8 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("image_url");
 
                     b.Property<Guid>("PostId")
@@ -1863,7 +1980,8 @@ namespace NunchakuClub.Infrastructure.Migrations
                         .HasColumnName("post_id");
 
                     b.Property<string>("ThumbnailUrl")
-                        .HasColumnType("text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
                         .HasColumnName("thumbnail_url");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -2052,12 +2170,14 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("name");
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("slug");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -2066,6 +2186,10 @@ namespace NunchakuClub.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_tags");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tags_slug");
 
                     b.ToTable("tags", (string)null);
                 });
@@ -2215,6 +2339,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.Coach", "Coach")
                         .WithMany("CoachAchievements")
                         .HasForeignKey("CoachId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_achievements_coaches_coach_id");
 
                     b.Navigation("Coach");
@@ -2225,6 +2350,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany("ActivityLogs")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_activity_logs_users_user_id");
 
                     b.Navigation("User");
@@ -2359,6 +2485,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.Category", "Parent")
                         .WithMany("Children")
                         .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_categories_categories_parent_id");
 
                     b.Navigation("Parent");
@@ -2369,6 +2496,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_coaches_users_user_id");
 
                     b.Navigation("User");
@@ -2379,6 +2507,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.Comment", "Parent")
                         .WithMany("Replies")
                         .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_comments_comments_parent_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.Post", "Post")
@@ -2391,6 +2520,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany("Comments")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_comments_users_user_id");
 
                     b.Navigation("Parent");
@@ -2405,6 +2535,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_contact_submissions_courses_course_id");
 
                     b.Navigation("Course");
@@ -2434,6 +2565,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_course_enrollments_users_user_id");
 
                     b.Navigation("Course");
@@ -2469,10 +2601,10 @@ namespace NunchakuClub.Infrastructure.Migrations
                 {
                     b.HasOne("NunchakuClub.Domain.Entities.User", "Uploader")
                         .WithMany()
-                        .HasForeignKey("UploaderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("UploadedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_media_files_users_uploader_id");
+                        .HasConstraintName("fk_media_files_users_uploaded_by");
 
                     b.Navigation("Uploader");
                 });
@@ -2482,11 +2614,13 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.Page", "Page")
                         .WithMany()
                         .HasForeignKey("PageId")
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_menu_items_pages_page_id");
 
                     b.HasOne("NunchakuClub.Domain.Entities.MenuItem", "Parent")
                         .WithMany("Children")
                         .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_menu_items_menu_items_parent_id");
 
                     b.Navigation("Page");
@@ -2499,6 +2633,7 @@ namespace NunchakuClub.Infrastructure.Migrations
                     b.HasOne("NunchakuClub.Domain.Entities.Page", "Parent")
                         .WithMany("Children")
                         .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_pages_pages_parent_id");
 
                     b.Navigation("Parent");

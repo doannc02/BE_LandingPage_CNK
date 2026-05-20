@@ -99,7 +99,7 @@ public class ExchangeTokenCommandHandler : IRequestHandler<ExchangeTokenCommand,
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = _jwtTokenGenerator.GetAccessTokenExpiresAt(),
             User = new UserDto
             {
                 Id = user.Id,

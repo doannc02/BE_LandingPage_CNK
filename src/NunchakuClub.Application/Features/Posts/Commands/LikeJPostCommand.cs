@@ -1,4 +1,5 @@
-﻿using MediatR;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Application.Common.Models;
 using System;
@@ -21,8 +22,7 @@ public class LikePostCommandHandler : IRequestHandler<LikePostCommand, Result<in
     public async Task<Result<int>> Handle(LikePostCommand request, CancellationToken cancellationToken)
     {
         var post = await _context.Posts.FindAsync(new object[] { request.PostId }, cancellationToken);
-
-        if (post == null)
+        if (post is null)
             return Result<int>.Failure("Bài viết không tồn tại");
 
         post.LikeCount++;

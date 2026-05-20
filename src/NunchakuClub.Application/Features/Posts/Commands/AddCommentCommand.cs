@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NunchakuClub.Application.Common.Interfaces;
 using NunchakuClub.Application.Common.Models;
@@ -30,15 +30,15 @@ public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, Resul
         CancellationToken cancellationToken)
     {
         var post = await _context.Posts.FindAsync(new object[] { request.PostId }, cancellationToken);
-        if (post == null)
+        if (post is null)
             return Result<Guid>.Failure("Bài viết không tồn tại");
 
         if (request.ParentId.HasValue)
         {
-            var parentComment = await _context.Comments
-                .FindAsync(new object[] { request.ParentId.Value }, cancellationToken);
+            var parentExists = await _context.Comments
+                .AnyAsync(c => c.Id == request.ParentId.Value && c.PostId == request.PostId, cancellationToken);
 
-            if (parentComment == null || parentComment.PostId != request.PostId)
+            if (!parentExists)
                 return Result<Guid>.Failure("Comment cha không hợp lệ");
         }
 
@@ -47,20 +47,22 @@ public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, Resul
 
         if (user == null)
         {
-            // Tạo user tạm thời cho comment
+            // Guest user — không có quyền đăng nhập, chỉ dùng để liên kết comment
             user = new User
             {
                 Id = Guid.NewGuid(),
                 FullName = request.AuthorName,
                 Email = request.AuthorEmail,
+                Username = $"guest_{Guid.NewGuid():N}",
+                PasswordHash = string.Empty,
+                Role = UserRole.Guest,
                 Status = UserStatus.Inactive,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
-
             _context.Users.Add(user);
         }
 
-        // Tạo comment
         var comment = new Comment
         {
             Id = Guid.NewGuid(),
@@ -73,12 +75,9 @@ public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, Resul
             ParentId = request.ParentId,
             CreatedAt = DateTime.UtcNow
         };
-
         _context.Comments.Add(comment);
 
-        // Tăng comment count của bài viết
         post.CommentCount++;
-
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result<Guid>.Success(comment.Id);

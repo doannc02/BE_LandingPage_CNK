@@ -65,7 +65,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = _jwtTokenGenerator.GetAccessTokenExpiresAt(),
             User = new UserDto
             {
                 Id = user.Id,
